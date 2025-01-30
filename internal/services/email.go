@@ -3,7 +3,6 @@ package services
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"github.com/orewaee/nuclear-api/internal/app/api"
 	"github.com/orewaee/nuclear-api/internal/app/domain"
 	"html/template"
@@ -34,8 +33,6 @@ func (service *EmailService) Send(ctx context.Context, receiver, subject, text s
 		"Subject: " + subject + "\n" +
 		"Content-Type: text/html; charset=\"UTF-8\";\n\n" +
 		text
-
-	fmt.Println(message)
 
 	return smtp.SendMail(service.host+":"+service.port, auth, service.from, []string{receiver}, []byte(message))
 }

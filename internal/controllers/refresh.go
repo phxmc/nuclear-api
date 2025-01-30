@@ -21,6 +21,8 @@ func (controller *RestController) refresh(ctx *fasthttp.RequestCtx) {
 			utils.MustWriteJson(ctx, response, fasthttp.StatusUnauthorized)
 			return
 		default:
+			controller.log.Error().Err(err).Send()
+
 			response.Message = domain.ErrUnexpectedError.Error()
 			utils.MustWriteJson(ctx, response, fasthttp.StatusInternalServerError)
 			return

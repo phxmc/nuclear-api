@@ -7,12 +7,13 @@ import (
 	"github.com/valyala/fasthttp"
 )
 
+// todo refactor
+
 func (controller *RestController) me(ctx *fasthttp.RequestCtx) {
 	email := fmt.Sprintf("%s", ctx.UserValue("email"))
 
 	account, err := controller.accountApi.GetAccountByEmail(ctx, email)
 	if err != nil {
-
 		utils.MustWriteString(ctx, err.Error(), fasthttp.StatusInternalServerError)
 		return
 	}

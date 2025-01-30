@@ -22,6 +22,8 @@ func (controller *RestController) register(ctx *fasthttp.RequestCtx) {
 			utils.MustWriteJson(ctx, response, fasthttp.StatusBadRequest)
 			return
 		default:
+			controller.log.Error().Err(err).Send()
+
 			response.Message = domain.ErrUnexpectedError.Error()
 			utils.MustWriteJson(ctx, response, fasthttp.StatusInternalServerError)
 			return
@@ -40,6 +42,8 @@ func (controller *RestController) register(ctx *fasthttp.RequestCtx) {
 			utils.MustWriteJson(ctx, response, fasthttp.StatusConflict)
 			return
 		default:
+			controller.log.Error().Err(err).Send()
+
 			response.Message = domain.ErrUnexpectedError.Error()
 			utils.MustWriteJson(ctx, response, fasthttp.StatusInternalServerError)
 			return

@@ -6,6 +6,7 @@ import (
 	"github.com/orewaee/nuclear-api/internal/config"
 	"github.com/orewaee/nuclear-api/internal/controllers"
 	"github.com/orewaee/nuclear-api/internal/disk"
+	"github.com/orewaee/nuclear-api/internal/logger"
 	"github.com/orewaee/nuclear-api/internal/postgres"
 	"github.com/orewaee/nuclear-api/internal/redis"
 	"github.com/orewaee/nuclear-api/internal/services"
@@ -27,6 +28,11 @@ func main() {
 	tokenRepo := redis.NewTokenRepo(redisClient)
 	staticRepo := disk.NewStaticRepo()
 
+	log, err := logger.NewZerolog()
+	if err != nil {
+		panic(err)
+	}
+
 	authApi := services.NewAuthServiceBuilder().
 		AccountRepo(accountRepo).
 		LoginCodeRepo(loginCodeRepo).
@@ -42,8 +48,10 @@ func main() {
 
 	emailApi := services.NewEmailService("orewaee@gmail.com", typedenv.String("SMTP_PASSWORD"), "smtp.gmail.com", "587")
 
-	rest := controllers.NewRestController(":8080", authApi, accountApi, emailApi, staticApi)
-	rest.Run()
+	rest := controllers.NewRestController(":8080", authApi, accountApi, emailApi, staticApi, log)
+	if err := rest.Run(); err != nil {
+		panic(err)
+	}
 }
 
 func mustInitRedisClient(ctx context.Context) *goredis.Client {
