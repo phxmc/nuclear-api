@@ -1,0 +1,9 @@
+/.idea
+
+/api
+/config/*
+
+/static
+
+.DS_Store
+
