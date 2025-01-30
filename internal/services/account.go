@@ -59,7 +59,7 @@ func (service *AccountService) SaveTempAccount(ctx context.Context, email, code 
 	}
 
 	account := &domain.Account{
-		Id:    utils.NewId(),
+		Id:    utils.MustNewId(),
 		Email: email,
 		Perms: domain.PermDefault,
 	}
