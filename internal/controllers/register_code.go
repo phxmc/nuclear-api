@@ -49,6 +49,11 @@ func (controller *RestController) registerCode(ctx *fasthttp.RequestCtx) {
 	// success message
 	go controller.emailApi.Send(ctx, data.Email, "Welcome", "success")
 
+	controller.log.Info().
+		Str("id", account.Id).
+		Str("email", account.Email).
+		Msg("new account registered")
+
 	accountDto := &dto.Account{
 		Id:    account.Id,
 		Email: account.Email,
