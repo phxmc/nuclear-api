@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/orewaee/nuclear-api/internal/builders"
 	"github.com/orewaee/nuclear-api/internal/config"
 	"github.com/orewaee/nuclear-api/internal/controllers"
 	"github.com/orewaee/nuclear-api/internal/disk"
@@ -33,13 +34,13 @@ func main() {
 		panic(err)
 	}
 
-	authApi := services.NewAuthServiceBuilder().
+	authApi := builders.NewAuthServiceBuilder().
 		AccountRepo(accountRepo).
 		LoginCodeRepo(loginCodeRepo).
 		TokenRepo(tokenRepo).
 		Build()
 
-	accountApi := services.NewAccountServiceBuilder().
+	accountApi := builders.NewAccountServiceBuilder().
 		AccountRepo(accountRepo).
 		TempAccountRepo(tempAccountRepo).
 		Build()

@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"github.com/orewaee/nuclear-api/internal/app/api"
 	"github.com/orewaee/nuclear-api/internal/app/domain"
 	"github.com/orewaee/nuclear-api/internal/app/repo"
 	"github.com/orewaee/nuclear-api/internal/utils"
@@ -11,6 +12,15 @@ import (
 type AccountService struct {
 	accountRepo     repo.AccountReadWriter
 	tempAccountRepo repo.TempAccountReadWriter
+}
+
+func NewAccountService(
+	accountRepo repo.AccountReadWriter,
+	tempAccountRepo repo.TempAccountReadWriter) api.AccountApi {
+	return &AccountService{
+		accountRepo:     accountRepo,
+		tempAccountRepo: tempAccountRepo,
+	}
 }
 
 func (service *AccountService) AddTempAccount(ctx context.Context, email string, lifetime time.Duration) (*domain.TempAccount, time.Time, error) {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/orewaee/nuclear-api/internal/app/api"
 	"github.com/orewaee/nuclear-api/internal/app/domain"
 	"github.com/orewaee/nuclear-api/internal/app/repo"
 	"github.com/orewaee/nuclear-api/internal/utils"
@@ -15,6 +16,16 @@ type AuthService struct {
 	accountRepo   repo.AccountReadWriter
 	loginCodeRepo repo.LoginCodeReadWriter
 	tokenRepo     repo.TokenReadWriter
+}
+
+func NewAuthService(accountRepo repo.AccountReadWriter,
+	loginCodeRepo repo.LoginCodeReadWriter,
+	tokenRepo repo.TokenReadWriter) api.AuthApi {
+	return &AuthService{
+		accountRepo:   accountRepo,
+		loginCodeRepo: loginCodeRepo,
+		tokenRepo:     tokenRepo,
+	}
 }
 
 func (service *AuthService) Login(ctx context.Context, email string) (string, time.Time, error) {
