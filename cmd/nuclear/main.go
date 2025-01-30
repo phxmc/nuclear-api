@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/orewaee/nuclear-api/internal/builders"
 	"github.com/orewaee/nuclear-api/internal/config"
@@ -47,9 +48,14 @@ func main() {
 
 	staticApi := services.NewStaticService(staticRepo)
 
-	emailApi := services.NewEmailService("orewaee@gmail.com", typedenv.String("SMTP_PASSWORD"), "smtp.gmail.com", "587")
+	emailApi := services.NewEmailService(
+		typedenv.String("SMTP_FROM"),
+		typedenv.String("SMTP_PASSWORD"),
+		typedenv.String("SMTP_HOST"),
+		typedenv.String("SMTP_PORT"),
+	)
 
-	rest := controllers.NewRestController(":8080", authApi, accountApi, emailApi, staticApi, log)
+	rest := controllers.NewRestController(typedenv.String("NUCLEAR_ADDR"), authApi, accountApi, emailApi, staticApi, log)
 	if err := rest.Run(); err != nil {
 		panic(err)
 	}
@@ -68,7 +74,14 @@ func mustInitRedisClient(ctx context.Context) *goredis.Client {
 }
 
 func mustInitPostgresPool(ctx context.Context) *pgxpool.Pool {
-	pool, err := postgres.NewPool(ctx, "postgres://root:kYJuSfL4FX7Mtcy2badzHpn9GmqUve6r@localhost:5442/nuclear?sslmode=disable")
+	user := typedenv.String("POSTGRES_USER")
+	password := typedenv.String("POSTGRES_PASSWORD")
+	addr := typedenv.String("POSTGRES_ADDR")
+	database := typedenv.String("POSTGRES_DATABASE")
+
+	connString := fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable", user, password, addr, database)
+
+	pool, err := postgres.NewPool(ctx, connString)
 	if err != nil {
 		panic(err)
 	}

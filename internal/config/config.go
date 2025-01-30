@@ -20,7 +20,7 @@ func MustLoad() {
 		panic(err)
 	}
 
-	typedenv.DefaultString("VORTEX_ADDR", ":8080")
+	typedenv.DefaultString("NUCLEAR_ADDR", ":8080")
 
 	typedenv.DefaultDuration("ACCESS_LIFETIME", time.Minute*10)
 	typedenv.DefaultDuration("REFRESH_LIFETIME", time.Hour*24)
@@ -28,6 +28,4 @@ func MustLoad() {
 	typedenv.DefaultString("ALPHABET", "abcdefghijklmnopqrstuvwxyz")
 
 	typedenv.DefaultDuration("TEMP_ACCOUNT_LIFETIME", time.Minute*5)
-
-	typedenv.DefaultString("SUPER_ID", "00000000")
 }
