@@ -33,7 +33,7 @@ func (controller *RestController) loginCode(ctx *fasthttp.RequestCtx) {
 		response := &dto.Error{}
 
 		switch {
-		case errors.Is(err, domain.ErrLoginCodeNotExist) || errors.Is(err, domain.ErrIncorrectEmail):
+		case errors.Is(err, domain.ErrLoginCodeNotExist) || errors.Is(err, domain.ErrWrongCode):
 			response.Message = domain.ErrTempCodeNotFound.Error()
 			utils.MustWriteJson(ctx, response, fasthttp.StatusNotFound)
 			return
