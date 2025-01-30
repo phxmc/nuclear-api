@@ -20,6 +20,8 @@ func (controller *RestController) loginCode(ctx *fasthttp.RequestCtx) {
 			utils.MustWriteJson(ctx, response, fasthttp.StatusBadRequest)
 			return
 		default:
+			controller.log.Error().Err(err).Send()
+
 			response.Message = domain.ErrUnexpectedError.Error()
 			utils.MustWriteJson(ctx, response, fasthttp.StatusInternalServerError)
 			return
@@ -36,6 +38,8 @@ func (controller *RestController) loginCode(ctx *fasthttp.RequestCtx) {
 			utils.MustWriteJson(ctx, response, fasthttp.StatusNotFound)
 			return
 		default:
+			controller.log.Error().Err(err).Send()
+
 			response.Message = domain.ErrUnexpectedError.Error()
 			utils.MustWriteJson(ctx, response, fasthttp.StatusInternalServerError)
 			return

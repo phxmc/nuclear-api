@@ -6,6 +6,8 @@ import (
 	"github.com/valyala/fasthttp"
 )
 
+// todo refactor it
+
 func (controller *RestController) getBanner(ctx *fasthttp.RequestCtx) {
 	accountId := fmt.Sprintf("%s", ctx.UserValue("account_id"))
 

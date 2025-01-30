@@ -5,8 +5,8 @@ import (
 	"github.com/orewaee/nuclear-api/internal/app/api"
 	"github.com/orewaee/nuclear-api/internal/middlewares"
 	"github.com/orewaee/nuclear-api/internal/utils"
+	"github.com/rs/zerolog"
 	"github.com/valyala/fasthttp"
-	"log"
 )
 
 type RestController struct {
@@ -15,13 +15,14 @@ type RestController struct {
 	accountApi api.AccountApi
 	emailApi   api.EmailApi
 	staticApi  api.StaticApi
+	log        *zerolog.Logger
 }
 
-func NewRestController(addr string, authApi api.AuthApi, accountApi api.AccountApi, emailApi api.EmailApi, staticApi api.StaticApi) *RestController {
-	return &RestController{addr, authApi, accountApi, emailApi, staticApi}
+func NewRestController(addr string, authApi api.AuthApi, accountApi api.AccountApi, emailApi api.EmailApi, staticApi api.StaticApi, log *zerolog.Logger) *RestController {
+	return &RestController{addr, authApi, accountApi, emailApi, staticApi, log}
 }
 
-func (controller *RestController) Run() {
+func (controller *RestController) Run() error {
 	router := fastrouter.New()
 
 	optionsHandler := func(ctx *fasthttp.RequestCtx) {
@@ -50,8 +51,6 @@ func (controller *RestController) Run() {
 	v1.GET("/banner/{account_id}", controller.getBanner)
 	v1.POST("/banner", middlewares.Auth(controller.authApi, controller.setBanner))
 
-	log.Println("running app on addr", controller.addr)
-	if err := fasthttp.ListenAndServe(controller.addr, middlewares.Cors(router.Handler)); err != nil {
-		log.Fatalln(err)
-	}
+	controller.log.Info().Msgf("running app on addr %s", controller.addr)
+	return fasthttp.ListenAndServe(controller.addr, middlewares.Cors(middlewares.Log(controller.log, router.Handler)))
 }

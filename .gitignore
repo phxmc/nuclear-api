@@ -3,6 +3,7 @@
 /api
 /config/*
 
+/logs
 /static
 
 .DS_Store

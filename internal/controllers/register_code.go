@@ -20,6 +20,8 @@ func (controller *RestController) registerCode(ctx *fasthttp.RequestCtx) {
 			utils.MustWriteJson(ctx, response, fasthttp.StatusBadRequest)
 			return
 		default:
+			controller.log.Error().Err(err).Send()
+
 			response.Message = domain.ErrUnexpectedError.Error()
 			utils.MustWriteJson(ctx, response, fasthttp.StatusInternalServerError)
 			return
@@ -31,11 +33,13 @@ func (controller *RestController) registerCode(ctx *fasthttp.RequestCtx) {
 		response := &dto.Error{}
 
 		switch {
-		case errors.Is(err, domain.ErrWrongCode):
+		case errors.Is(err, domain.ErrWrongCode) || errors.Is(err, domain.ErrTempAccountNotExist):
 			response.Message = err.Error()
-			utils.MustWriteJson(ctx, response, fasthttp.StatusBadRequest)
+			utils.MustWriteJson(ctx, response, fasthttp.StatusNotFound)
 			return
 		default:
+			controller.log.Error().Err(err).Send()
+
 			response.Message = domain.ErrUnexpectedError.Error()
 			utils.MustWriteJson(ctx, response, fasthttp.StatusInternalServerError)
 			return
@@ -44,6 +48,11 @@ func (controller *RestController) registerCode(ctx *fasthttp.RequestCtx) {
 
 	// success message
 	go controller.emailApi.Send(ctx, data.Email, "Welcome", "success")
+
+	controller.log.Info().
+		Str("id", account.Id).
+		Str("email", account.Email).
+		Msg("new account registered")
 
 	accountDto := &dto.Account{
 		Id:    account.Id,

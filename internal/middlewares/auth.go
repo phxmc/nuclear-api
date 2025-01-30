@@ -6,7 +6,6 @@ import (
 	"github.com/orewaee/nuclear-api/internal/utils"
 	"github.com/orewaee/typedenv"
 	"github.com/valyala/fasthttp"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -31,11 +30,8 @@ func Auth(authApi api.AuthApi, handler fasthttp.RequestHandler) fasthttp.Request
 			return
 		}
 
-		fmt.Println(accessToken)
-
 		claims, err := authApi.GetTokenClaims(accessToken, typedenv.String("ACCESS_KEY"))
 		if err != nil {
-			log.Println(err)
 			utils.MustWriteString(ctx, "invalid token", http.StatusUnauthorized)
 			return
 		}
