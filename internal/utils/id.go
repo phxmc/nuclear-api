@@ -1,13 +1,28 @@
 package utils
 
 import (
-	gonanoid "github.com/matoous/go-nanoid/v2"
-	"github.com/orewaee/typedenv"
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ethereum/go-ethereum/crypto"
 )
 
-func NewId() string {
-	alphabet := typedenv.String("ID_ALPHABET")
-	size := typedenv.Int("ID_SIZE", 8)
+func MustNewId() string {
+	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	if err != nil {
+		panic(err)
+	}
 
-	return gonanoid.MustGenerate(alphabet, size)
+	publicKey := privateKey.Public()
+	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
+	if !ok {
+		panic(err)
+	}
+
+	publicKeyBytes := crypto.FromECDSAPub(publicKeyECDSA)
+	hash := crypto.Keccak256Hash(publicKeyBytes[1:])
+	address := hash[12:]
+
+	return hexutil.Encode(address)
 }
