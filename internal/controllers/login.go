@@ -41,6 +41,7 @@ func (controller *RestController) login(ctx *fasthttp.RequestCtx) {
 		case errors.Is(err, domain.ErrLoginCodeExist):
 			response.Message = err.Error()
 			utils.MustWriteJson(ctx, response, fasthttp.StatusConflict)
+			return
 		default:
 			controller.log.Error().Err(err).Send()
 
