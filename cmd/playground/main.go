@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
-	"time"
+	"github.com/orewaee/nuclear-api/internal/utils"
 )
 
 func main() {
-	timestamp := time.Now().Add(time.Minute * 2)
-
-	fmt.Printf("%s", timestamp)
+	for i := 0; i < 100; i++ {
+		fmt.Println(utils.MustNewId())
+	}
 }
