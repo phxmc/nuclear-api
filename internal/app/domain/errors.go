@@ -29,6 +29,7 @@ var (
 	ErrUnexpectedError  = errors.New("unexpected error")
 	ErrTempCodeNotFound = errors.New("temp code not found")
 
-	ErrNoPass    = errors.New("pass does not exist")
-	ErrPassExist = errors.New("pass already exists")
+	ErrNoPass      = errors.New("pass does not exist")
+	ErrPassExist   = errors.New("pass already exists")
+	ErrInvalidPass = errors.New("invalid pass")
 )
