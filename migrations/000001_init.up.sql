@@ -1,5 +1,9 @@
+BEGIN;
+
 CREATE TABLE accounts (
     id CHAR(8) PRIMARY KEY,
     email VARCHAR(128) UNIQUE NOT NULL,
     perms SMALLINT DEFAULT 2
 );
+
+COMMIT;
