@@ -93,7 +93,7 @@ func (repo *PassRepo) AddPass(ctx context.Context, pass *domain.Pass) error {
 		}
 	}()
 
-	_, err = tx.Exec(ctx, "INSERT INTO passes (id, account_id, from, to, active, created_at) VALUES ($1, $2, $3, $4, $5, $6)",
+	_, err = tx.Exec(ctx, "INSERT INTO passes (id, account_id, \"from\", \"to\", active, created_at) VALUES ($1, $2, $3, $4, $5, $6)",
 		pass.Id, pass.AccountId, pass.From, pass.To, pass.Active, pass.CreatedAt)
 
 	if err != nil {

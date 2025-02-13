@@ -20,6 +20,7 @@ func NewPassService(
 	log *zerolog.Logger) api.PassApi {
 	return &PassService{
 		passRepo: passRepo,
+		log:      log,
 	}
 }
 
