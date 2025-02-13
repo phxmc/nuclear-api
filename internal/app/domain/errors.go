@@ -5,8 +5,8 @@ import "errors"
 var (
 	ErrTempAccountAlreadyExists = errors.New("account already exists")
 
-	ErrAccountExist    = errors.New("account already exists")
-	ErrAccountNotExist = errors.New("account does not exist")
+	ErrAccountExist = errors.New("account already exists")
+	ErrNoAccount    = errors.New("account does not exist")
 
 	ErrTempAccountExist    = errors.New("temp account already exists")
 	ErrTempAccountNotExist = errors.New("temp account does not exist")
@@ -28,4 +28,7 @@ var (
 	ErrIncorrectEmail   = errors.New("incorrect email")
 	ErrUnexpectedError  = errors.New("unexpected error")
 	ErrTempCodeNotFound = errors.New("temp code not found")
+
+	ErrNoPass    = errors.New("pass does not exist")
+	ErrPassExist = errors.New("pass already exists")
 )

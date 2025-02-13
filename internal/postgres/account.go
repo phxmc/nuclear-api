@@ -24,7 +24,7 @@ func (repo *AccountRepo) GetAccountById(ctx context.Context, id string) (*domain
 	err := row.Scan(&account.Id, &account.Email, &account.Perms)
 
 	if err != nil && errors.Is(err, pgx.ErrNoRows) {
-		return nil, domain.ErrAccountNotExist
+		return nil, domain.ErrNoAccount
 	}
 
 	if err != nil {
@@ -41,7 +41,7 @@ func (repo *AccountRepo) GetAccountByEmail(ctx context.Context, email string) (*
 	err := row.Scan(&account.Id, &account.Email, &account.Perms)
 
 	if err != nil && errors.Is(err, pgx.ErrNoRows) {
-		return nil, domain.ErrAccountNotExist
+		return nil, domain.ErrNoAccount
 	}
 
 	if err != nil {

@@ -35,7 +35,7 @@ func (service *AuthService) Login(ctx context.Context, email string) (string, ti
 	}
 
 	if !ok {
-		return "", time.Now(), domain.ErrAccountNotExist
+		return "", time.Now(), domain.ErrNoAccount
 	}
 
 	ok, err = service.loginCodeRepo.LoginCodeExists(ctx, email)

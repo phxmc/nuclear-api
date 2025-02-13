@@ -34,7 +34,7 @@ func (controller *RestController) login(ctx *fasthttp.RequestCtx) {
 		response := &dto.Error{}
 
 		switch {
-		case errors.Is(err, domain.ErrAccountNotExist):
+		case errors.Is(err, domain.ErrNoAccount):
 			response.Message = err.Error()
 			utils.MustWriteJson(ctx, response, fasthttp.StatusNotFound)
 			return

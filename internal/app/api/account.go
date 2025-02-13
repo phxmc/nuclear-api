@@ -24,11 +24,11 @@ type AccountApi interface {
 
 	// GetAccountById
 	//
-	// This can return domain.ErrAccountNotExist
+	// This can return domain.ErrNoAccount
 	GetAccountById(ctx context.Context, id string) (*domain.Account, error)
 
 	// GetAccountByEmail
 	//
-	// This can return domain.ErrAccountNotExist
+	// This can return domain.ErrNoAccount
 	GetAccountByEmail(ctx context.Context, email string) (*domain.Account, error)
 }
