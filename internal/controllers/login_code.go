@@ -10,6 +10,11 @@ import (
 
 func (controller *RestController) loginCode(ctx *fasthttp.RequestCtx) {
 	data := utils.MustReadJson[dto.LoginCodeRequest](ctx)
+	if data == nil {
+		response := &dto.Error{Message: "missing request body"}
+		utils.MustWriteJson(ctx, response, fasthttp.StatusBadRequest)
+		return
+	}
 
 	if err := data.Validate(); err != nil {
 		response := &dto.Error{}

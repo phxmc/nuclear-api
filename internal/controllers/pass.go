@@ -11,6 +11,11 @@ import (
 
 func (controller *RestController) addPass(ctx *fasthttp.RequestCtx) {
 	data := utils.MustReadJson[dto.PassRequest](ctx)
+	if data == nil {
+		response := &dto.Error{Message: "missing request body"}
+		utils.MustWriteJson(ctx, response, fasthttp.StatusBadRequest)
+		return
+	}
 
 	pass, err := controller.passApi.AddPass(ctx, data.AccountId, data.From, data.To)
 

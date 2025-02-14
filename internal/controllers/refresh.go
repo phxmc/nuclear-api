@@ -10,6 +10,11 @@ import (
 
 func (controller *RestController) refresh(ctx *fasthttp.RequestCtx) {
 	data := utils.MustReadJson[dto.RefreshRequest](ctx)
+	if data == nil {
+		response := &dto.Error{Message: "missing request body"}
+		utils.MustWriteJson(ctx, response, fasthttp.StatusBadRequest)
+		return
+	}
 
 	access, refresh, err := controller.authApi.RefreshToken(ctx, data.RefreshToken)
 	if err != nil {

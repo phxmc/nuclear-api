@@ -33,6 +33,10 @@ func MustWriteJson(ctx *fasthttp.RequestCtx, data interface{}, code int) {
 func MustReadJson[T interface{}](ctx *fasthttp.RequestCtx) *T {
 	bytes := ctx.PostBody()
 
+	if len(bytes) == 0 {
+		return nil
+	}
+
 	data := new(T)
 	if err := json.Unmarshal(bytes, data); err != nil {
 		panic(err)

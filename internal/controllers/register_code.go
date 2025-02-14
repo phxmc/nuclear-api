@@ -10,6 +10,11 @@ import (
 
 func (controller *RestController) registerCode(ctx *fasthttp.RequestCtx) {
 	data := utils.MustReadJson[dto.RegisterCodeRequest](ctx)
+	if data == nil {
+		response := &dto.Error{Message: "missing request body"}
+		utils.MustWriteJson(ctx, response, fasthttp.StatusBadRequest)
+		return
+	}
 
 	if err := data.Validate(); err != nil {
 		response := &dto.Error{}
