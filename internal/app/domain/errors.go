@@ -26,10 +26,13 @@ var (
 	ErrInvalidBanner  = errors.New("invalid banner")
 
 	ErrIncorrectEmail   = errors.New("incorrect email")
-	ErrUnexpectedError  = errors.New("unexpected error")
 	ErrTempCodeNotFound = errors.New("temp code not found")
+
+	ErrUnexpected = errors.New("unexpected error")
 
 	ErrNoPass      = errors.New("pass does not exist")
 	ErrPassExist   = errors.New("pass already exists")
 	ErrInvalidPass = errors.New("invalid pass")
+
+	ErrNoPerms = errors.New("permissions does not exist")
 )

@@ -1,37 +1,59 @@
 package middlewares
 
 import (
-	"fmt"
+	"errors"
 	"github.com/orewaee/nuclear-api/internal/app/domain"
+	"github.com/orewaee/nuclear-api/internal/dto"
 	"github.com/orewaee/nuclear-api/internal/utils"
 	"github.com/valyala/fasthttp"
 	"net/http"
-	"strconv"
 )
 
-func Perm(permGroup *domain.PermGroup, handler fasthttp.RequestHandler) fasthttp.RequestHandler {
+type PermMiddleware struct {
+	permGroup *domain.PermGroup
+}
+
+func NewPermMiddleware(permGroup *domain.PermGroup) *PermMiddleware {
+	return &PermMiddleware{
+		permGroup: permGroup,
+	}
+}
+
+func (middleware *PermMiddleware) Use(handler fasthttp.RequestHandler) fasthttp.RequestHandler {
 	return func(ctx *fasthttp.RequestCtx) {
-		perms, err := strconv.Atoi(fmt.Sprintf("%d", ctx.UserValue("perms")))
+		perms, err := utils.ExtractPerms(ctx)
 
 		if err != nil {
-			utils.MustWriteString(ctx, "invalid perms", fasthttp.StatusUnauthorized)
-			return
+			response := &dto.Error{}
+
+			switch {
+			case errors.Is(err, domain.ErrNoPerms):
+				response.Message = err.Error()
+				utils.MustWriteJson(ctx, response, fasthttp.StatusUnauthorized)
+				return
+			default:
+				response.Message = domain.ErrUnexpected.Error()
+				utils.MustWriteJson(ctx, response, fasthttp.StatusInternalServerError)
+				return
+			}
 		}
 
 		ok := true
+		response := &dto.Error{}
 
-		switch permGroup.GroupMode {
+		switch middleware.permGroup.GroupMode {
 		case domain.GroupModeAll:
 			ok = true
 
-			for _, perm := range permGroup.Perms {
+			for _, perm := range middleware.permGroup.Perms {
 				if !domain.HasPerm(perms, perm) {
 					ok = false
 				}
 			}
 
 			if !ok {
-				utils.MustWriteString(ctx, "permission denied", http.StatusForbidden)
+				response.Message = "permission denied"
+				utils.MustWriteJson(ctx, response, http.StatusForbidden)
 				return
 			}
 			break
@@ -39,14 +61,15 @@ func Perm(permGroup *domain.PermGroup, handler fasthttp.RequestHandler) fasthttp
 		case domain.GroupModeAny:
 			ok = false
 
-			for _, perm := range permGroup.Perms {
+			for _, perm := range middleware.permGroup.Perms {
 				if domain.HasPerm(perms, perm) {
 					ok = true
 				}
 			}
 
 			if !ok {
-				utils.MustWriteString(ctx, "permission denied", http.StatusForbidden)
+				response.Message = "permission denied"
+				utils.MustWriteJson(ctx, response, http.StatusForbidden)
 				return
 			}
 			break

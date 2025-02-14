@@ -29,6 +29,7 @@ func main() {
 	loginCodeRepo := redis.NewLoginCodeRepo(redisClient)
 	tokenRepo := redis.NewTokenRepo(redisClient)
 	staticRepo := disk.NewStaticRepo()
+	passRepo := postgres.NewPassRepo(postgresPool)
 
 	log, err := logger.NewZerolog()
 	if err != nil {
@@ -55,7 +56,12 @@ func main() {
 		typedenv.String("SMTP_PORT"),
 	)
 
-	rest := controllers.NewRestController(typedenv.String("NUCLEAR_ADDR"), authApi, accountApi, emailApi, staticApi, log)
+	passApi := builders.NewPassServiceBuilder().
+		PassRepo(passRepo).
+		Log(log).
+		Build()
+
+	rest := controllers.NewRestController(typedenv.String("NUCLEAR_ADDR"), authApi, accountApi, emailApi, staticApi, passApi, log)
 	if err := rest.Run(); err != nil {
 		panic(err)
 	}

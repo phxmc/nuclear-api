@@ -23,7 +23,7 @@ func (controller *RestController) refresh(ctx *fasthttp.RequestCtx) {
 		default:
 			controller.log.Error().Err(err).Send()
 
-			response.Message = domain.ErrUnexpectedError.Error()
+			response.Message = domain.ErrUnexpected.Error()
 			utils.MustWriteJson(ctx, response, fasthttp.StatusInternalServerError)
 			return
 		}
