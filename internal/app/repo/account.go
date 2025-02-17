@@ -6,14 +6,24 @@ import (
 )
 
 type AccountReader interface {
+	// GetAccountById returns the account by id
+	//
+	// May return domain.ErrNoAccount
 	GetAccountById(ctx context.Context, id string) (*domain.Account, error)
+
+	// GetAccountByEmail returns the account by email
+	//
+	// This can return domain.ErrNoAccount
 	GetAccountByEmail(ctx context.Context, email string) (*domain.Account, error)
 
-	// AccountExistsByEmail returns true if an account with the specified email exists, otherwise false
+	// AccountExistsByEmail returns the bool value of the existence of an account with the specified email.
 	AccountExistsByEmail(ctx context.Context, email string) (bool, error)
 }
 
 type AccountWriter interface {
+	// AddAccount adds the specified account.
+	//
+	// May return domain.ErrAccountExist.
 	AddAccount(ctx context.Context, account *domain.Account) error
 }
 

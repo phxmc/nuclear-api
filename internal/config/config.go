@@ -9,9 +9,9 @@ import (
 
 func MustLoad() {
 	envs := []string{
-		"config/.env.dev",
-		"config/postgres.env.dev",
-		"config/redis.env.dev",
+		"config/.env",
+		"config/postgres.env",
+		"config/redis.env",
 	}
 
 	err := godotenv.Load(envs...)

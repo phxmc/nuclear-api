@@ -28,7 +28,7 @@ func (repo *TempAccountRepo) GetTempAccount(ctx context.Context, email string) (
 	if err != nil {
 		switch {
 		case errors.Is(err, goredis.Nil):
-			return nil, domain.ErrTempAccountNotExist
+			return nil, domain.ErrNoTempAccount
 		default:
 			return nil, err
 		}
@@ -57,6 +57,15 @@ func (repo *TempAccountRepo) TempAccountExists(ctx context.Context, email string
 }
 
 func (repo *TempAccountRepo) AddTempAccount(ctx context.Context, email string, tempAccount *domain.TempAccount, lifetime time.Duration) error {
+	exists, err := repo.TempAccountExists(ctx, email)
+	if err != nil {
+		return err
+	}
+
+	if exists {
+		return domain.ErrTempAccountExist
+	}
+
 	var buffer bytes.Buffer
 	encoder := gob.NewEncoder(&buffer)
 
@@ -69,6 +78,15 @@ func (repo *TempAccountRepo) AddTempAccount(ctx context.Context, email string, t
 }
 
 func (repo *TempAccountRepo) RemoveTempAccount(ctx context.Context, email string) error {
+	exists, err := repo.TempAccountExists(ctx, email)
+	if err != nil {
+		return err
+	}
+
+	if !exists {
+		return domain.ErrNoTempAccount
+	}
+
 	key := fmt.Sprintf("%s:%s", repo.prefix, email)
 	return repo.client.Del(ctx, key).Err()
 }

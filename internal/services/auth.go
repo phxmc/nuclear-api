@@ -47,7 +47,7 @@ func (service *AuthService) Login(ctx context.Context, email string) (string, ti
 		return "", time.Now(), domain.ErrLoginCodeExist
 	}
 
-	code := utils.NewCode()
+	code := utils.MustNewCode()
 	lifetime := typedenv.Duration("LOGIN_CODE_LIFETIME")
 	if err := service.loginCodeRepo.AddLoginCode(ctx, email, code, lifetime); err != nil {
 		return "", time.Now(), err
