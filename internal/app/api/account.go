@@ -7,28 +7,31 @@ import (
 )
 
 type AccountApi interface {
-	// AddTempAccount
+	// AddTempAccount creates a temporary account and maps it to the specified email.
 	//
-	// This can return domain.ErrTempAccountExist, domain.ErrAccountExist
+	// Returns the created temporary account and its lifetime.
+	//
+	// May return domain.ErrTempAccountExist, domain.ErrAccountExist.
 	AddTempAccount(ctx context.Context, email string, lifetime time.Duration) (*domain.TempAccount, time.Time, error)
 
-	// RemoveTempAccount
-	//
-	// This can only return internal errors
+	// RemoveTempAccount removes the temporary account with the specified email.
 	RemoveTempAccount(ctx context.Context, email string) error
 
-	// SaveTempAccount
+	// SaveTempAccount turns a temporary account into a permanent account.
 	//
-	// This can return domain.ErrWrongCode, domain.ErrTempAccountNotExist
+	// May return domain.ErrWrongCode, domain.ErrNoTempAccount.
 	SaveTempAccount(ctx context.Context, email, code string) (*domain.Account, error)
 
-	// GetAccountById
+	// GetAccountById returns the account with the specified id.
 	//
-	// This can return domain.ErrNoAccount
+	// May return domain.ErrNoAccount.
 	GetAccountById(ctx context.Context, id string) (*domain.Account, error)
 
-	// GetAccountByEmail
+	// GetAccountByEmail returns the account with the specified email.
 	//
-	// This can return domain.ErrNoAccount
+	// May return domain.ErrNoAccount.
 	GetAccountByEmail(ctx context.Context, email string) (*domain.Account, error)
+
+	// AccountExistsByEmail returns the bool value of the existence of an account with the specified email.
+	AccountExistsByEmail(ctx context.Context, email string) (bool, error)
 }
