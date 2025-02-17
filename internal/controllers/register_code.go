@@ -38,7 +38,7 @@ func (controller *RestController) registerCode(ctx *fasthttp.RequestCtx) {
 		response := &dto.Error{}
 
 		switch {
-		case errors.Is(err, domain.ErrTempAccountNotExist) || errors.Is(err, domain.ErrWrongCode):
+		case errors.Is(err, domain.ErrNoTempAccount) || errors.Is(err, domain.ErrWrongCode):
 			response.Message = domain.ErrTempCodeNotFound.Error()
 			utils.MustWriteJson(ctx, response, fasthttp.StatusNotFound)
 			return
