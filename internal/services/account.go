@@ -48,7 +48,7 @@ func (service *AccountService) AddTempAccount(ctx context.Context, email string,
 	}
 
 	tempAccount := &domain.TempAccount{
-		Code: utils.NewCode(),
+		Code: utils.MustNewCode(),
 	}
 
 	err = service.tempAccountRepo.AddTempAccount(ctx, email, tempAccount, lifetime)
