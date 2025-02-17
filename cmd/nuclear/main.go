@@ -42,9 +42,15 @@ func main() {
 		TokenRepo(tokenRepo).
 		Build()
 
-	accountApi := builders.NewAccountServiceBuilder().
+	accountApi := builders.NewAccountApiBuilder().
 		AccountRepo(accountRepo).
 		TempAccountRepo(tempAccountRepo).
+		Log(log).
+		Build()
+
+	passApi := builders.NewPassApiBuilder().
+		PassRepo(passRepo).
+		Log(log).
 		Build()
 
 	staticApi := services.NewStaticService(staticRepo)
@@ -56,36 +62,19 @@ func main() {
 		typedenv.String("SMTP_PORT"),
 	)
 
-	passApi := builders.NewPassServiceBuilder().
-		PassRepo(passRepo).
-		Log(log).
-		Build()
-
 	rest := controllers.NewRestController(typedenv.String("NUCLEAR_ADDR"), authApi, accountApi, emailApi, staticApi, passApi, log)
 	if err := rest.Run(); err != nil {
 		panic(err)
 	}
 }
 
-func mustInitRedisClient(ctx context.Context) *goredis.Client {
-	addr := typedenv.String("REDIS_ADDR")
-	password := typedenv.String("REDIS_PASSWORD")
-
-	client, err := redis.NewClient(ctx, addr, password, 0)
-	if err != nil {
-		panic(err)
-	}
-
-	return client
-}
-
 func mustInitPostgresPool(ctx context.Context) *pgxpool.Pool {
 	user := typedenv.String("POSTGRES_USER")
 	password := typedenv.String("POSTGRES_PASSWORD")
-	addr := typedenv.String("POSTGRES_ADDR")
-	database := typedenv.String("POSTGRES_DATABASE")
+	host := typedenv.String("POSTGRES_HOST")
+	port := typedenv.String("POSTGRES_PORT")
 
-	connString := fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable", user, password, addr, database)
+	connString := fmt.Sprintf("postgres://%s:%s@%s:%s/nuclear?sslmode=disable", user, password, host, port)
 
 	pool, err := postgres.NewPool(ctx, connString)
 	if err != nil {
@@ -93,4 +82,19 @@ func mustInitPostgresPool(ctx context.Context) *pgxpool.Pool {
 	}
 
 	return pool
+}
+
+func mustInitRedisClient(ctx context.Context) *goredis.Client {
+	host := typedenv.String("REDIS_HOST")
+	port := typedenv.String("REDIS_PORT")
+	password := typedenv.String("REDIS_PASSWORD")
+
+	addr := fmt.Sprintf("%s:%s", host, port)
+
+	client, err := redis.NewClient(ctx, addr, password, 0)
+	if err != nil {
+		panic(err)
+	}
+
+	return client
 }
