@@ -7,34 +7,34 @@ import (
 	"github.com/rs/zerolog"
 )
 
-type PassServiceBuilder interface {
+type PassApiBuilder interface {
 	Builder[api.PassApi]
-	PassRepo(passRepo repo.PassReadWriter) PassServiceBuilder
-	Log(log *zerolog.Logger) PassServiceBuilder
+	PassRepo(repo.PassReadWriter) PassApiBuilder
+	Log(*zerolog.Logger) PassApiBuilder
 }
 
-type passServiceBuilder struct {
+type passApiBuilder struct {
 	passRepo repo.PassReadWriter
 	log      *zerolog.Logger
 }
 
-func NewPassServiceBuilder() PassServiceBuilder {
-	return &passServiceBuilder{}
+func NewPassApiBuilder() PassApiBuilder {
+	return &passApiBuilder{}
 }
 
-func (builder *passServiceBuilder) Build() api.PassApi {
+func (builder *passApiBuilder) Build() api.PassApi {
 	return services.NewPassService(
 		builder.passRepo,
 		builder.log,
 	)
 }
 
-func (builder *passServiceBuilder) PassRepo(passRepo repo.PassReadWriter) PassServiceBuilder {
+func (builder *passApiBuilder) PassRepo(passRepo repo.PassReadWriter) PassApiBuilder {
 	builder.passRepo = passRepo
 	return builder
 }
 
-func (builder *passServiceBuilder) Log(log *zerolog.Logger) PassServiceBuilder {
+func (builder *passApiBuilder) Log(log *zerolog.Logger) PassApiBuilder {
 	builder.log = log
 	return builder
 }

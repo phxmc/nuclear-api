@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"github.com/orewaee/nuclear-api/internal/app/api"
 	"github.com/orewaee/nuclear-api/internal/app/domain"
 	"github.com/orewaee/nuclear-api/internal/app/repo"
@@ -26,53 +27,72 @@ func NewPassService(
 
 func (service *PassService) GetPassById(ctx context.Context, id string) (*domain.Pass, error) {
 	pass, err := service.passRepo.GetPassById(ctx, id)
-	if err != nil {
-		service.log.Error().Err(err).Send()
-		return nil, err
+
+	if err == nil {
+		return pass, nil
 	}
 
-	return pass, nil
+	switch {
+	case errors.Is(err, domain.ErrNoPass):
+	default:
+		service.log.Error().Err(err).Send()
+	}
+
+	return nil, err
 }
 
 func (service *PassService) GetPassByAccountId(ctx context.Context, accountId string) (*domain.Pass, error) {
 	pass, err := service.passRepo.GetPassByAccountId(ctx, accountId)
-	if err != nil {
-		service.log.Error().Err(err).Send()
-		return nil, err
-	}
 
-	if pass.From == nil && pass.To == nil {
+	if err == nil {
 		return pass, nil
 	}
 
-	now := time.Now()
-
-	if pass.From != nil && now.Before(*pass.From) {
-		return nil, domain.ErrInvalidPass
+	switch {
+	case errors.Is(err, domain.ErrNoAccount):
+	case errors.Is(err, domain.ErrNoPass):
+	default:
+		service.log.Error().Err(err).Send()
 	}
 
-	if pass.To != nil && now.After(*pass.To) {
-		return nil, domain.ErrInvalidPass
-	}
-
-	return pass, nil
+	return nil, err
 }
 
-func (service *PassService) AddPass(ctx context.Context, accountId string, from *time.Time, to *time.Time) (*domain.Pass, error) {
+func (service *PassService) GetPassHistoryByAccountId(ctx context.Context, accountId string) ([]*domain.Pass, error) {
+	passes, err := service.passRepo.GetPassHistoryByAccountId(ctx, accountId)
+
+	if err == nil {
+		return passes, nil
+	}
+
+	switch {
+	case errors.Is(err, domain.ErrNoAccount):
+	default:
+		service.log.Error().Err(err).Send()
+	}
+
+	return nil, err
+}
+
+func (service *PassService) SetPass(ctx context.Context, accountId string, from *time.Time, to *time.Time) (*domain.Pass, error) {
 	pass := &domain.Pass{
 		Id:        utils.MustNewId(),
-		AccountId: accountId,
 		From:      from,
 		To:        to,
-		Active:    true,
 		CreatedAt: time.Now(),
 	}
 
-	err := service.passRepo.AddPass(ctx, pass)
-	if err != nil {
-		service.log.Error().Err(err).Send()
-		return nil, err
+	err := service.passRepo.SetPass(ctx, accountId, pass)
+
+	if err == nil {
+		return pass, nil
 	}
 
-	return pass, nil
+	switch {
+	case errors.Is(err, domain.ErrNoAccount):
+	default:
+		service.log.Error().Err(err).Send()
+	}
+
+	return nil, err
 }

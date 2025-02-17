@@ -28,7 +28,7 @@ type PassWriter interface {
 	// If an active pass was associated with the account, it will be marked as inactive.
 	//
 	// May return domain.ErrNoAccount.
-	SetPass(ctx context.Context, pass *domain.Pass) error
+	SetPass(ctx context.Context, accountId string, pass *domain.Pass) error
 }
 
 type PassReadWriter interface {

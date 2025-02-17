@@ -9,7 +9,7 @@ import (
 type AccountApi interface {
 	// AddTempAccount creates a temporary account and maps it to the specified email.
 	//
-	// Returns the created temporary account and its lifetime.
+	// Returns the created temporary account and its deadline.
 	//
 	// May return domain.ErrTempAccountExist, domain.ErrAccountExist.
 	AddTempAccount(ctx context.Context, email string, lifetime time.Duration) (*domain.TempAccount, time.Time, error)

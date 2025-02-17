@@ -19,7 +19,7 @@ type TempAccountReader interface {
 type TempAccountWriter interface {
 	// AddTempAccount adds the specified temporary account.
 	//
-	// May return domain.ErrAccountExist.
+	// May return domain.ErrTempAccountExist.
 	AddTempAccount(ctx context.Context, email string, tempAccount *domain.TempAccount, lifetime time.Duration) error
 
 	// RemoveTempAccount removes the temporary account with the specified email.
