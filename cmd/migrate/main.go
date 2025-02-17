@@ -21,6 +21,13 @@ func getUrl() string {
 }
 
 func main() {
+	if len(os.Args) != 2 {
+		fmt.Println("invalid syntax")
+		return
+	}
+
+	action := os.Args[1]
+
 	err := godotenv.Load("config/postgres.env")
 	if err != nil && !os.IsNotExist(err) {
 		panic(err)
@@ -33,7 +40,22 @@ func main() {
 		panic(err)
 	}
 
-	if err := m.Up(); err != nil {
+	var f func() error
+
+	switch action {
+	case "up":
+		f = m.Up
+		break
+	case "down":
+		f = m.Down
+	default:
+		fmt.Println("invalid syntax")
+		return
+	}
+
+	if err := f(); err != nil {
 		panic(err)
 	}
+
+	fmt.Println("complete")
 }
