@@ -40,6 +40,7 @@ func main() {
 		AccountRepo(accountRepo).
 		LoginCodeRepo(loginCodeRepo).
 		TokenRepo(tokenRepo).
+		Log(log).
 		Build()
 
 	accountApi := builders.NewAccountApiBuilder().

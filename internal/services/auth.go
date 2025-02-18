@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/orewaee/nuclear-api/internal/app/api"
@@ -9,6 +10,7 @@ import (
 	"github.com/orewaee/nuclear-api/internal/app/repo"
 	"github.com/orewaee/nuclear-api/internal/utils"
 	"github.com/orewaee/typedenv"
+	"github.com/rs/zerolog"
 	"time"
 )
 
@@ -16,21 +18,26 @@ type AuthService struct {
 	accountRepo   repo.AccountReadWriter
 	loginCodeRepo repo.LoginCodeReadWriter
 	tokenRepo     repo.TokenReadWriter
+	log           *zerolog.Logger
 }
 
-func NewAuthService(accountRepo repo.AccountReadWriter,
+func NewAuthService(
+	accountRepo repo.AccountReadWriter,
 	loginCodeRepo repo.LoginCodeReadWriter,
-	tokenRepo repo.TokenReadWriter) api.AuthApi {
+	tokenRepo repo.TokenReadWriter,
+	log *zerolog.Logger) api.AuthApi {
 	return &AuthService{
 		accountRepo:   accountRepo,
 		loginCodeRepo: loginCodeRepo,
 		tokenRepo:     tokenRepo,
+		log:           log,
 	}
 }
 
 func (service *AuthService) Login(ctx context.Context, email string) (string, time.Time, error) {
 	ok, err := service.accountRepo.AccountExistsByEmail(ctx, email)
 	if err != nil {
+		service.log.Error().Err(err).Send()
 		return "", time.Now(), err
 	}
 
@@ -38,8 +45,9 @@ func (service *AuthService) Login(ctx context.Context, email string) (string, ti
 		return "", time.Now(), domain.ErrNoAccount
 	}
 
-	ok, err = service.loginCodeRepo.LoginCodeExists(ctx, email)
+	ok, err = service.loginCodeRepo.LoginCodeExists(ctx, "web_login_code", email)
 	if err != nil {
+		service.log.Error().Err(err).Send()
 		return "", time.Now(), err
 	}
 
@@ -49,16 +57,30 @@ func (service *AuthService) Login(ctx context.Context, email string) (string, ti
 
 	code := utils.MustNewCode()
 	lifetime := typedenv.Duration("LOGIN_CODE_LIFETIME")
-	if err := service.loginCodeRepo.AddLoginCode(ctx, email, code, lifetime); err != nil {
-		return "", time.Now(), err
+
+	err = service.loginCodeRepo.AddLoginCode(ctx, "web_login_code", email, code, lifetime)
+	if err == nil {
+		return code, time.Now().Add(lifetime), nil
 	}
 
-	return code, time.Now().Add(lifetime), nil
+	switch {
+	case errors.Is(err, domain.ErrLoginCodeExist):
+	default:
+		service.log.Error().Err(err).Send()
+	}
+
+	return "", time.Now(), err
 }
 
 func (service *AuthService) LoginCode(ctx context.Context, email, code string) (string, string, error) {
-	loginCode, err := service.loginCodeRepo.GetLoginCode(ctx, email)
+	loginCode, err := service.loginCodeRepo.GetLoginCode(ctx, "web_login_code", email)
 	if err != nil {
+		switch {
+		case errors.Is(err, domain.ErrNoLoginCode):
+		default:
+			service.log.Error().Err(err).Send()
+		}
+
 		return "", "", err
 	}
 
@@ -68,12 +90,18 @@ func (service *AuthService) LoginCode(ctx context.Context, email, code string) (
 
 	account, err := service.accountRepo.GetAccountByEmail(ctx, email)
 	if err != nil {
+		switch {
+		case errors.Is(err, domain.ErrNoAccount):
+		default:
+			service.log.Error().Err(err).Send()
+		}
+
 		return "", "", err
 	}
 
 	now := time.Now()
 
-	access, err := service.CreateToken(map[string]interface{}{
+	access, err := service.GenerateToken(map[string]interface{}{
 		"iss":   "nuclear",
 		"email": account.Email,
 		"perms": account.Perms,
@@ -82,11 +110,12 @@ func (service *AuthService) LoginCode(ctx context.Context, email, code string) (
 	}, typedenv.String("ACCESS_KEY"))
 
 	if err != nil {
+		service.log.Error().Err(err).Send()
 		return "", "", err
 	}
 
 	lifetime := typedenv.Duration("REFRESH_LIFETIME")
-	refresh, err := service.CreateToken(map[string]interface{}{
+	refresh, err := service.GenerateToken(map[string]interface{}{
 		"iss":   "nuclear",
 		"email": account.Email,
 		"perms": account.Perms,
@@ -95,31 +124,67 @@ func (service *AuthService) LoginCode(ctx context.Context, email, code string) (
 	}, typedenv.String("REFRESH_KEY"))
 
 	if err != nil {
+		service.log.Error().Err(err).Send()
 		return "", "", err
 	}
 
-	if err := service.tokenRepo.AddToken(ctx, refresh, lifetime); err != nil {
+	err = service.tokenRepo.AddToken(ctx, "web_token", refresh, lifetime)
+	if err != nil {
+		switch {
+		case errors.Is(err, domain.ErrTokenExist):
+		default:
+			service.log.Error().Err(err).Send()
+		}
+
 		return "", "", err
 	}
 
 	return access, refresh, nil
 }
 
-func (service *AuthService) CreateToken(claims map[string]interface{}, key string) (string, error) {
+func (service *AuthService) GenerateToken(claims map[string]interface{}, key string) (string, error) {
 	var mapClaims jwt.MapClaims = claims
 
 	unsigned := jwt.NewWithClaims(jwt.SigningMethodHS256, mapClaims)
-
 	signed, err := unsigned.SignedString([]byte(key))
 	if err != nil {
+		service.log.Error().Err(err).Send()
 		return "", err
 	}
 
 	return signed, nil
 }
 
-func (service *AuthService) WhitelistToken(ctx context.Context, refreshToken string, lifetime time.Duration) error {
-	return service.tokenRepo.AddToken(ctx, refreshToken, lifetime)
+func (service *AuthService) WhitelistToken(ctx context.Context, prefix, token string, lifetime time.Duration) error {
+	err := service.tokenRepo.AddToken(ctx, prefix, token, lifetime)
+
+	if err == nil {
+		return nil
+	}
+
+	switch {
+	case errors.Is(err, domain.ErrTokenExist):
+	default:
+		service.log.Error().Err(err).Send()
+	}
+
+	return err
+}
+
+func (service *AuthService) RevokeToken(ctx context.Context, prefix, token string) error {
+	err := service.tokenRepo.RemoveToken(ctx, prefix, token)
+
+	if err == nil {
+		return nil
+	}
+
+	switch {
+	case errors.Is(err, domain.ErrNoToken):
+	default:
+		service.log.Error().Err(err).Send()
+	}
+
+	return err
 }
 
 func (service *AuthService) GetTokenClaims(token string, key string) (map[string]interface{}, error) {
@@ -132,6 +197,7 @@ func (service *AuthService) GetTokenClaims(token string, key string) (map[string
 	})
 
 	if err != nil {
+		service.log.Error().Err(err).Send()
 		return nil, err
 	}
 
@@ -147,26 +213,31 @@ func (service *AuthService) GetTokenClaims(token string, key string) (map[string
 	return claims, nil
 }
 
-func (service *AuthService) RefreshToken(ctx context.Context, refreshToken string) (string, string, error) {
-	exists, err := service.tokenRepo.TokenExists(ctx, refreshToken)
-
+func (service *AuthService) RefreshTokens(ctx context.Context, prefix, token string) (string, string, error) {
+	exists, err := service.tokenRepo.TokenExists(ctx, prefix, token)
 	if err != nil || !exists {
 		return "", "", domain.ErrInvalidToken
 	}
 
-	if err := service.tokenRepo.RemoveToken(ctx, refreshToken); err != nil {
+	err = service.tokenRepo.RemoveToken(ctx, prefix, token)
+	if err != nil {
+		switch {
+		case errors.Is(err, domain.ErrNoToken):
+		default:
+			service.log.Error().Err(err).Send()
+		}
+
 		return "", "", err
 	}
 
-	mapClaims, err := service.GetTokenClaims(refreshToken, typedenv.String("REFRESH_KEY"))
-
+	mapClaims, err := service.GetTokenClaims(token, typedenv.String("REFRESH_KEY"))
 	if err != nil {
 		return "", "", domain.ErrInvalidToken
 	}
 
 	now := time.Now()
 
-	access, err := service.CreateToken(map[string]interface{}{
+	access, err := service.GenerateToken(map[string]interface{}{
 		"iss":   "nuclear",
 		"email": mapClaims["email"],
 		"perms": mapClaims["perms"],
@@ -179,7 +250,7 @@ func (service *AuthService) RefreshToken(ctx context.Context, refreshToken strin
 	}
 
 	lifetime := typedenv.Duration("REFRESH_LIFETIME")
-	refresh, err := service.CreateToken(map[string]interface{}{
+	refresh, err := service.GenerateToken(map[string]interface{}{
 		"iss":   "vortex",
 		"email": mapClaims["email"],
 		"perms": mapClaims["perms"],
@@ -191,7 +262,14 @@ func (service *AuthService) RefreshToken(ctx context.Context, refreshToken strin
 		return "", "", err
 	}
 
-	if err := service.tokenRepo.AddToken(ctx, refresh, lifetime); err != nil {
+	err = service.tokenRepo.AddToken(ctx, prefix, refresh, lifetime)
+	if err != nil {
+		switch {
+		case errors.Is(err, domain.ErrTokenExist):
+		default:
+			service.log.Error().Err(err).Send()
+		}
+
 		return "", "", err
 	}
 

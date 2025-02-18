@@ -6,24 +6,32 @@ import (
 )
 
 type AuthApi interface {
-	// Login
+	// Login returns the generated temporary code and its deadline.
 	//
-	// This can return domain.ErrAccountNotExist, domain.ErrLoginCodeExist
+	// May return domain.ErrAccountNotExist, domain.ErrLoginCodeExist.
 	Login(ctx context.Context, email string) (string, time.Time, error)
 
-	// LoginCode
+	// LoginCode returns a pair of tokens.
 	//
-	// This can return domain.ErrLoginCodeNotExist, domain.ErrWrongCode
+	// May return domain.ErrNoLoginCode, domain.ErrWrongCode.
 	LoginCode(ctx context.Context, email, code string) (string, string, error)
 
-	CreateToken(claims map[string]interface{}, key string) (string, error)
+	// GenerateToken generates a signed token with the specified claims.
+	GenerateToken(claims map[string]interface{}, key string) (string, error)
 
-	WhitelistToken(ctx context.Context, refreshToken string, lifetime time.Duration) error
+	// WhitelistToken whitelists the specified token with a prefix.
+	WhitelistToken(ctx context.Context, prefix, token string, lifetime time.Duration) error
 
+	// RevokeToken revokes the specified token with a prefix.
+	RevokeToken(ctx context.Context, prefix, token string) error
+
+	// GetTokenClaims retrieves claims from the token.
+	//
+	// May return domain.ErrInvalidToken.
 	GetTokenClaims(token string, key string) (map[string]interface{}, error)
 
-	// RefreshToken
+	// RefreshTokens returns a pair of tokens.
 	//
-	// This can return domain.ErrInvalidToken
-	RefreshToken(ctx context.Context, refreshToken string) (string, string, error)
+	// May return domain.ErrInvalidToken.
+	RefreshTokens(ctx context.Context, prefix, token string) (string, string, error)
 }

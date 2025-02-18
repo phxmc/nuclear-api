@@ -9,7 +9,7 @@ import (
 	"net/http"
 )
 
-func (controller *RestController) addPass(ctx *fasthttp.RequestCtx) {
+func (controller *RestController) setPass(ctx *fasthttp.RequestCtx) {
 	data := utils.MustReadJson[dto.PassRequest](ctx)
 	if data == nil {
 		response := &dto.Error{Message: "missing request body"}
@@ -17,7 +17,7 @@ func (controller *RestController) addPass(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
-	pass, err := controller.passApi.AddPass(ctx, data.AccountId, data.From, data.To)
+	pass, err := controller.passApi.SetPass(ctx, data.AccountId, data.From, data.To)
 
 	if err != nil {
 		response := &dto.Error{}
@@ -41,10 +41,8 @@ func (controller *RestController) addPass(ctx *fasthttp.RequestCtx) {
 
 	response := &dto.Pass{
 		Id:        pass.Id,
-		AccountId: pass.AccountId,
 		From:      pass.From,
 		To:        pass.To,
-		Active:    pass.Active,
 		CreatedAt: pass.CreatedAt,
 	}
 
