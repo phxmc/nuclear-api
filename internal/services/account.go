@@ -52,7 +52,6 @@ func (service *AccountService) AddTempAccount(ctx context.Context, email string,
 	}
 
 	err = service.tempAccountRepo.AddTempAccount(ctx, email, tempAccount, lifetime)
-
 	if err == nil {
 		return tempAccount, time.Now().Add(lifetime), nil
 	}

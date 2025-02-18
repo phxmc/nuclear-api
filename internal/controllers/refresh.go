@@ -16,7 +16,7 @@ func (controller *RestController) refresh(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
-	access, refresh, err := controller.authApi.RefreshToken(ctx, data.RefreshToken)
+	access, refresh, err := controller.authApi.RefreshTokens(ctx, "web_token", data.RefreshToken)
 	if err != nil {
 		response := &dto.Error{}
 

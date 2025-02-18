@@ -16,8 +16,11 @@ var (
 
 	ErrInvalidPass = errors.New("invalid pass")
 
-	ErrLoginCodeExist    = errors.New("login code already exists")
-	ErrLoginCodeNotExist = errors.New("login code does not exist")
+	ErrTokenExist = errors.New("token already exists")
+	ErrNoToken    = errors.New("token does not exist")
+
+	ErrLoginCodeExist = errors.New("login code already exists")
+	ErrNoLoginCode    = errors.New("login code does not exist")
 
 	ErrWrongCode = errors.New("wrong code")
 

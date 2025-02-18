@@ -5,18 +5,23 @@ import (
 	"time"
 )
 
-// TokenReader contains methods for reading tokens
 type TokenReader interface {
-	TokenExists(ctx context.Context, token string) (bool, error)
+	// TokenExists checks for the existence of the specified token with a prefix.
+	TokenExists(ctx context.Context, prefix, token string) (bool, error)
 }
 
-// TokenWriter contains methods for writing tokens
 type TokenWriter interface {
-	AddToken(ctx context.Context, token string, lifetime time.Duration) error
-	RemoveToken(ctx context.Context, token string) error
+	// AddToken adds the specified token with a prefix.
+	//
+	// May return domain.ErrTokenExist.
+	AddToken(ctx context.Context, prefix, token string, lifetime time.Duration) error
+
+	// RemoveToken removes the specified token with a prefix.
+	//
+	// May return domain.ErrNoToken.
+	RemoveToken(ctx context.Context, prefix, token string) error
 }
 
-// TokenReadWriter is a wrapper for TokenReader and TokenWriter
 type TokenReadWriter interface {
 	TokenReader
 	TokenWriter
