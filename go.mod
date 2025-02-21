@@ -3,6 +3,7 @@ module github.com/orewaee/nuclear-api
 go 1.23.4
 
 require (
+	github.com/MarceloPetrucio/go-scalar-api-reference v0.0.0-20240521013641-ce5d2efe0e06
 	github.com/ethereum/go-ethereum v1.14.13
 	github.com/fasthttp/router v1.5.2
 	github.com/golang-jwt/jwt/v5 v5.2.1
