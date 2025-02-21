@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"github.com/orewaee/nuclear-api/internal/app/api"
-	"github.com/orewaee/nuclear-api/internal/app/domain"
 	"html/template"
 	"net/smtp"
 )
@@ -37,7 +36,35 @@ func (service *EmailService) Send(ctx context.Context, receiver, subject, text s
 	return smtp.SendMail(service.host+":"+service.port, auth, service.from, []string{receiver}, []byte(message))
 }
 
-func (service *EmailService) SendRegisterMail(ctx context.Context, receiver string, tempAccount *domain.TempAccount) error {
+func (service *EmailService) SendLoginEmail(ctx context.Context, receiver, device, datetime, code string) error {
+	auth := smtp.PlainAuth("", service.from, service.password, service.host)
+
+	registerTemplate, err := template.ParseFiles("templates/login.html")
+	if err != nil {
+		panic(err)
+	}
+
+	data := struct {
+		Device   string
+		DateTime string
+		Code     string
+	}{device, datetime, code}
+
+	buf := new(bytes.Buffer)
+	if err := registerTemplate.Execute(buf, data); err != nil {
+		return err
+	}
+
+	message := "From: " + service.from + "\n" +
+		"To: " + receiver + "\n" +
+		"Subject: Создание аккаунта\n" +
+		"Content-Type: text/html; charset=\"UTF-8\";\n\n" +
+		string(buf.Bytes())
+
+	return smtp.SendMail(service.host+":"+service.port, auth, service.from, []string{receiver}, []byte(message))
+}
+
+func (service *EmailService) SendRegisterEmail(ctx context.Context, receiver, device, datetime, code string) error {
 	auth := smtp.PlainAuth("", service.from, service.password, service.host)
 
 	registerTemplate, err := template.ParseFiles("templates/register.html")
@@ -45,15 +72,20 @@ func (service *EmailService) SendRegisterMail(ctx context.Context, receiver stri
 		panic(err)
 	}
 
-	buf := new(bytes.Buffer)
+	data := struct {
+		Device   string
+		DateTime string
+		Code     string
+	}{device, datetime, code}
 
-	if err := registerTemplate.Execute(buf, tempAccount); err != nil {
+	buf := new(bytes.Buffer)
+	if err := registerTemplate.Execute(buf, data); err != nil {
 		return err
 	}
 
 	message := "From: " + service.from + "\n" +
 		"To: " + receiver + "\n" +
-		"Subject: Complete register\n" +
+		"Subject: Создание аккаунта\n" +
 		"Content-Type: text/html; charset=\"UTF-8\";\n\n" +
 		string(buf.Bytes())
 

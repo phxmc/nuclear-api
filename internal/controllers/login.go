@@ -2,11 +2,11 @@ package controllers
 
 import (
 	"errors"
-	"fmt"
 	"github.com/orewaee/nuclear-api/internal/app/domain"
 	"github.com/orewaee/nuclear-api/internal/dto"
 	"github.com/orewaee/nuclear-api/internal/utils"
 	"github.com/valyala/fasthttp"
+	"time"
 )
 
 func (controller *RestController) login(ctx *fasthttp.RequestCtx) {
@@ -54,12 +54,8 @@ func (controller *RestController) login(ctx *fasthttp.RequestCtx) {
 		}
 	}
 
-	remoteAddr := ctx.RemoteAddr()
-	userAgent := string(ctx.UserAgent())
-
-	text := fmt.Sprintf("Enter code <b>%s</b> for complete auth. This code valid until %s.\nIP: %s\nUser Agent: %s", code, deadline, remoteAddr, userAgent)
-
-	go controller.emailApi.Send(ctx, data.Email, "Your login code - "+code, text)
+	device := string(ctx.UserAgent()) + " " + ctx.RemoteAddr().String()
+	go controller.emailApi.SendLoginEmail(ctx, data.Email, device, time.Now().Format(time.RFC822), code)
 
 	response := &dto.LoginResponse{Deadline: deadline}
 	utils.MustWriteJson(ctx, response, fasthttp.StatusCreated)

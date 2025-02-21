@@ -55,7 +55,8 @@ func (controller *RestController) register(ctx *fasthttp.RequestCtx) {
 		}
 	}
 
-	go controller.emailApi.SendRegisterMail(ctx, data.Email, tempAccount)
+	device := string(ctx.UserAgent()) + " " + ctx.RemoteAddr().String()
+	go controller.emailApi.SendRegisterEmail(ctx, data.Email, device, time.Now().Format(time.RFC822), tempAccount.Code)
 
 	response := &dto.RegisterResponse{Deadline: deadline}
 	utils.MustWriteJson(ctx, response, fasthttp.StatusCreated)
