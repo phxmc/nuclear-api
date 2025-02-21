@@ -5,9 +5,9 @@ import (
 	"github.com/orewaee/typedenv"
 )
 
-func NewCode() string {
+func MustNewCode() string {
 	alphabet := typedenv.String("CODE_ALPHABET")
-	size := typedenv.Int("CODE_SIZE", 8)
+	size := typedenv.Int("CODE_SIZE", 4)
 
 	return gonanoid.MustGenerate(alphabet, size)
 }

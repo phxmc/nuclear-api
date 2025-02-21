@@ -10,8 +10,13 @@ import (
 
 func (controller *RestController) refresh(ctx *fasthttp.RequestCtx) {
 	data := utils.MustReadJson[dto.RefreshRequest](ctx)
+	if data == nil {
+		response := &dto.Error{Message: "missing request body"}
+		utils.MustWriteJson(ctx, response, fasthttp.StatusBadRequest)
+		return
+	}
 
-	access, refresh, err := controller.authApi.RefreshToken(ctx, data.RefreshToken)
+	access, refresh, err := controller.authApi.RefreshTokens(ctx, "web_token", data.RefreshToken)
 	if err != nil {
 		response := &dto.Error{}
 
@@ -23,7 +28,7 @@ func (controller *RestController) refresh(ctx *fasthttp.RequestCtx) {
 		default:
 			controller.log.Error().Err(err).Send()
 
-			response.Message = domain.ErrUnexpectedError.Error()
+			response.Message = domain.ErrUnexpected.Error()
 			utils.MustWriteJson(ctx, response, fasthttp.StatusInternalServerError)
 			return
 		}

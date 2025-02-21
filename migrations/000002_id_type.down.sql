@@ -1,1 +1,0 @@
-ALTER TABLE accounts ALTER COLUMN id TYPE CHAR(8);

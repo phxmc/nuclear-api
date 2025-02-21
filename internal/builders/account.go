@@ -4,36 +4,45 @@ import (
 	"github.com/orewaee/nuclear-api/internal/app/api"
 	"github.com/orewaee/nuclear-api/internal/app/repo"
 	"github.com/orewaee/nuclear-api/internal/services"
+	"github.com/rs/zerolog"
 )
 
-type AccountServiceBuilder interface {
+type AccountApiBuilder interface {
 	Builder[api.AccountApi]
-	AccountRepo(accountRepo repo.AccountReadWriter) AccountServiceBuilder
-	TempAccountRepo(tempAccountRepo repo.TempAccountReadWriter) AccountServiceBuilder
+	AccountRepo(repo.AccountReadWriter) AccountApiBuilder
+	TempAccountRepo(repo.TempAccountReadWriter) AccountApiBuilder
+	Log(*zerolog.Logger) AccountApiBuilder
 }
 
-type accountServiceBuilder struct {
+type accountApiBuilder struct {
 	accountRepo     repo.AccountReadWriter
 	tempAccountRepo repo.TempAccountReadWriter
+	log             *zerolog.Logger
 }
 
-func NewAccountServiceBuilder() AccountServiceBuilder {
-	return &accountServiceBuilder{}
+func NewAccountApiBuilder() AccountApiBuilder {
+	return &accountApiBuilder{}
 }
 
-func (builder *accountServiceBuilder) Build() api.AccountApi {
+func (builder *accountApiBuilder) Build() api.AccountApi {
 	return services.NewAccountService(
 		builder.accountRepo,
 		builder.tempAccountRepo,
+		builder.log,
 	)
 }
 
-func (builder *accountServiceBuilder) AccountRepo(accountRepo repo.AccountReadWriter) AccountServiceBuilder {
+func (builder *accountApiBuilder) AccountRepo(accountRepo repo.AccountReadWriter) AccountApiBuilder {
 	builder.accountRepo = accountRepo
 	return builder
 }
 
-func (builder *accountServiceBuilder) TempAccountRepo(tempAccountRepo repo.TempAccountReadWriter) AccountServiceBuilder {
+func (builder *accountApiBuilder) TempAccountRepo(tempAccountRepo repo.TempAccountReadWriter) AccountApiBuilder {
 	builder.tempAccountRepo = tempAccountRepo
+	return builder
+}
+
+func (builder *accountApiBuilder) Log(log *zerolog.Logger) AccountApiBuilder {
+	builder.log = log
 	return builder
 }

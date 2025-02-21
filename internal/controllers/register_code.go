@@ -10,6 +10,11 @@ import (
 
 func (controller *RestController) registerCode(ctx *fasthttp.RequestCtx) {
 	data := utils.MustReadJson[dto.RegisterCodeRequest](ctx)
+	if data == nil {
+		response := &dto.Error{Message: "missing request body"}
+		utils.MustWriteJson(ctx, response, fasthttp.StatusBadRequest)
+		return
+	}
 
 	if err := data.Validate(); err != nil {
 		response := &dto.Error{}
@@ -22,7 +27,7 @@ func (controller *RestController) registerCode(ctx *fasthttp.RequestCtx) {
 		default:
 			controller.log.Error().Err(err).Send()
 
-			response.Message = domain.ErrUnexpectedError.Error()
+			response.Message = domain.ErrUnexpected.Error()
 			utils.MustWriteJson(ctx, response, fasthttp.StatusInternalServerError)
 			return
 		}
@@ -33,14 +38,14 @@ func (controller *RestController) registerCode(ctx *fasthttp.RequestCtx) {
 		response := &dto.Error{}
 
 		switch {
-		case errors.Is(err, domain.ErrTempAccountNotExist) || errors.Is(err, domain.ErrWrongCode):
+		case errors.Is(err, domain.ErrNoTempAccount) || errors.Is(err, domain.ErrWrongCode):
 			response.Message = domain.ErrTempCodeNotFound.Error()
 			utils.MustWriteJson(ctx, response, fasthttp.StatusNotFound)
 			return
 		default:
 			controller.log.Error().Err(err).Send()
 
-			response.Message = domain.ErrUnexpectedError.Error()
+			response.Message = domain.ErrUnexpected.Error()
 			utils.MustWriteJson(ctx, response, fasthttp.StatusInternalServerError)
 			return
 		}

@@ -2,9 +2,9 @@ package domain
 
 import "time"
 
-type Account struct {
+type Pass struct {
 	Id        string
-	Email     string
-	Perms     int
+	From      *time.Time
+	To        *time.Time
 	CreatedAt time.Time
 }

@@ -3,6 +3,7 @@ package controllers
 import (
 	fastrouter "github.com/fasthttp/router"
 	"github.com/orewaee/nuclear-api/internal/app/api"
+	"github.com/orewaee/nuclear-api/internal/app/domain"
 	"github.com/orewaee/nuclear-api/internal/middlewares"
 	"github.com/orewaee/nuclear-api/internal/utils"
 	"github.com/rs/zerolog"
@@ -15,11 +16,27 @@ type RestController struct {
 	accountApi api.AccountApi
 	emailApi   api.EmailApi
 	staticApi  api.StaticApi
+	passApi    api.PassApi
 	log        *zerolog.Logger
 }
 
-func NewRestController(addr string, authApi api.AuthApi, accountApi api.AccountApi, emailApi api.EmailApi, staticApi api.StaticApi, log *zerolog.Logger) *RestController {
-	return &RestController{addr, authApi, accountApi, emailApi, staticApi, log}
+func NewRestController(
+	addr string,
+	authApi api.AuthApi,
+	accountApi api.AccountApi,
+	emailApi api.EmailApi,
+	staticApi api.StaticApi,
+	passApi api.PassApi,
+	log *zerolog.Logger) *RestController {
+	return &RestController{
+		addr,
+		authApi,
+		accountApi,
+		emailApi,
+		staticApi,
+		passApi,
+		log,
+	}
 }
 
 func (controller *RestController) Run() error {
@@ -44,6 +61,12 @@ func (controller *RestController) Run() error {
 	v1.POST("/refresh", controller.refresh)
 
 	v1.GET("/me", middlewares.Auth(controller.authApi, controller.me))
+
+	passPerm := middlewares.NewPermMiddleware(&domain.PermGroup{
+		Perms:     []int{domain.PermSuper},
+		GroupMode: domain.GroupModeAll,
+	})
+	v1.POST("/pass", middlewares.Auth(controller.authApi, passPerm.Use(controller.setPass)))
 
 	v1.GET("/avatar/{account_id}", controller.getAvatar)
 	v1.POST("/avatar", middlewares.Auth(controller.authApi, controller.setAvatar))

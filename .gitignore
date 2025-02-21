@@ -3,6 +3,8 @@
 /api
 /config/*
 
+/cmd/playground
+
 /logs
 /static
 
