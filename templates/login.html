@@ -85,27 +85,27 @@
     </style>
 </head>
 <body>
-    <div class="wrapper">
-        <h4 class="title">Создание аккаунта</h4>
-        <p style="margin-top: 24px">Добро пожаловать в Nuclear. Завершите создание аккаунта, воспользовавшись временным кодом. Если это были не вы, просто проигнорируйте это сообщение.</p>
+<div class="wrapper">
+    <h4 class="title">Подтверждение входа</h4>
+    <p style="margin-top: 24px">С вашего аккаунта осуществлена попытка входа:</p>
 
-        <div class="block" style="margin-top: 24px">
-            <p class="hint">Устройство</p>
-            <div class="value" style="margin-top: 4px">
-                <code>{{ .Device }}</code>
-            </div>
+    <div class="block" style="margin-top: 24px">
+        <p class="hint">Устройство</p>
+        <div class="value" style="margin-top: 4px">
+            <code>{{ .Device }}</code>
         </div>
-
-        <div class="block" style="margin-top: 24px">
-            <p class="hint">Дата и время</p>
-            <div class="value" style="margin-top: 4px">
-                <code>{{ .DateTime }}</code>
-            </div>
-        </div>
-
-        <h4 class="code" style="margin-top: 24px">{{ .Code }}</h4>
-
-        <p style="margin-top: 24px">Не делитесь этим кодом ни с кем, включая агентов поддержки. Код будет активен некоторое время.</p>
     </div>
+
+    <div class="block" style="margin-top: 24px">
+        <p class="hint">Дата и время</p>
+        <div class="value" style="margin-top: 4px">
+            <code>{{ .DateTime }}</code>
+        </div>
+    </div>
+
+    <h4 class="code" style="margin-top: 24px">{{ .Code }}</h4>
+
+    <p style="margin-top: 24px">Не делитесь этим кодом ни с кем, включая агентов поддержки. Код будет активен некоторое время.</p>
+</div>
 </body>
 </html>
