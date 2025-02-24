@@ -68,7 +68,6 @@ func (service *AuthService) Login(ctx context.Context, email string) (string, ti
 	default:
 		service.log.Error().Err(err).Send()
 	}
-
 	return "", time.Now(), err
 }
 
@@ -80,7 +79,6 @@ func (service *AuthService) LoginCode(ctx context.Context, email, code string) (
 		default:
 			service.log.Error().Err(err).Send()
 		}
-
 		return "", "", err
 	}
 
@@ -95,7 +93,6 @@ func (service *AuthService) LoginCode(ctx context.Context, email, code string) (
 		default:
 			service.log.Error().Err(err).Send()
 		}
-
 		return "", "", err
 	}
 
@@ -103,6 +100,7 @@ func (service *AuthService) LoginCode(ctx context.Context, email, code string) (
 
 	access, err := service.GenerateToken(map[string]interface{}{
 		"iss":   "nuclear",
+		"id":    account.Id,
 		"email": account.Email,
 		"perms": account.Perms,
 		"exp":   now.Add(typedenv.Duration("ACCESS_LIFETIME")).Unix(),
@@ -117,6 +115,7 @@ func (service *AuthService) LoginCode(ctx context.Context, email, code string) (
 	lifetime := typedenv.Duration("REFRESH_LIFETIME")
 	refresh, err := service.GenerateToken(map[string]interface{}{
 		"iss":   "nuclear",
+		"id":    account.Id,
 		"email": account.Email,
 		"perms": account.Perms,
 		"exp":   now.Add(lifetime).Unix(),
@@ -135,7 +134,6 @@ func (service *AuthService) LoginCode(ctx context.Context, email, code string) (
 		default:
 			service.log.Error().Err(err).Send()
 		}
-
 		return "", "", err
 	}
 
@@ -167,7 +165,6 @@ func (service *AuthService) WhitelistToken(ctx context.Context, prefix, token st
 	default:
 		service.log.Error().Err(err).Send()
 	}
-
 	return err
 }
 
@@ -183,7 +180,6 @@ func (service *AuthService) RevokeToken(ctx context.Context, prefix, token strin
 	default:
 		service.log.Error().Err(err).Send()
 	}
-
 	return err
 }
 
@@ -192,7 +188,6 @@ func (service *AuthService) GetTokenClaims(token string, key string) (map[string
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-
 		return []byte(key), nil
 	})
 
@@ -226,7 +221,6 @@ func (service *AuthService) RefreshTokens(ctx context.Context, prefix, token str
 		default:
 			service.log.Error().Err(err).Send()
 		}
-
 		return "", "", err
 	}
 
@@ -239,6 +233,7 @@ func (service *AuthService) RefreshTokens(ctx context.Context, prefix, token str
 
 	access, err := service.GenerateToken(map[string]interface{}{
 		"iss":   "nuclear",
+		"id":    mapClaims["id"],
 		"email": mapClaims["email"],
 		"perms": mapClaims["perms"],
 		"exp":   now.Add(typedenv.Duration("ACCESS_LIFETIME")).Unix(),
@@ -252,6 +247,7 @@ func (service *AuthService) RefreshTokens(ctx context.Context, prefix, token str
 	lifetime := typedenv.Duration("REFRESH_LIFETIME")
 	refresh, err := service.GenerateToken(map[string]interface{}{
 		"iss":   "vortex",
+		"id":    mapClaims["id"],
 		"email": mapClaims["email"],
 		"perms": mapClaims["perms"],
 		"exp":   now.Add(lifetime).Unix(),
@@ -269,7 +265,6 @@ func (service *AuthService) RefreshTokens(ctx context.Context, prefix, token str
 		default:
 			service.log.Error().Err(err).Send()
 		}
-
 		return "", "", err
 	}
 
