@@ -40,6 +40,24 @@ func Auth(authApi api.AuthApi, handler fasthttp.RequestHandler) fasthttp.Request
 			return
 		}
 
+		idClaim, ok := claims["id"]
+		if !ok {
+			response := &dto.Error{Message: "invalid token"}
+			utils.MustWriteJson(ctx, response, fasthttp.StatusUnauthorized)
+			return
+		}
+
+		id := fmt.Sprintf("%s", idClaim)
+
+		emailClaim, ok := claims["email"]
+		if !ok {
+			response := &dto.Error{Message: "invalid token"}
+			utils.MustWriteJson(ctx, response, fasthttp.StatusUnauthorized)
+			return
+		}
+
+		email := fmt.Sprintf("%s", emailClaim)
+
 		permsClaim, ok := claims["perms"]
 		if !ok {
 			response := &dto.Error{Message: "invalid token"}
@@ -54,15 +72,7 @@ func Auth(authApi api.AuthApi, handler fasthttp.RequestHandler) fasthttp.Request
 			return
 		}
 
-		emailClaim, ok := claims["email"]
-		if !ok {
-			response := &dto.Error{Message: "invalid token"}
-			utils.MustWriteJson(ctx, response, fasthttp.StatusUnauthorized)
-			return
-		}
-
-		email := fmt.Sprintf("%s", emailClaim)
-
+		ctx.SetUserValue("id", id)
 		ctx.SetUserValue("email", email)
 		ctx.SetUserValue("perms", perms)
 

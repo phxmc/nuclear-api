@@ -57,7 +57,7 @@ func (service *EmailService) SendLoginEmail(ctx context.Context, receiver, devic
 
 	message := "From: " + service.from + "\n" +
 		"To: " + receiver + "\n" +
-		"Subject: Создание аккаунта\n" +
+		"Subject: Подтверждение входа — " + code + "\n" +
 		"Content-Type: text/html; charset=\"UTF-8\";\n\n" +
 		string(buf.Bytes())
 
@@ -85,7 +85,7 @@ func (service *EmailService) SendRegisterEmail(ctx context.Context, receiver, de
 
 	message := "From: " + service.from + "\n" +
 		"To: " + receiver + "\n" +
-		"Subject: Создание аккаунта\n" +
+		"Subject: Создание аккаунта — " + code + "\n" +
 		"Content-Type: text/html; charset=\"UTF-8\";\n\n" +
 		string(buf.Bytes())
 

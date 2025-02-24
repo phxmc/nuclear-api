@@ -2,6 +2,7 @@ package utils
 
 import (
 	"encoding/json"
+	"github.com/orewaee/nuclear-api/internal/app/domain"
 	"github.com/valyala/fasthttp"
 )
 
@@ -24,7 +25,6 @@ func MustWriteJson(ctx *fasthttp.RequestCtx, data interface{}, code int) {
 	if err != nil {
 		panic(err)
 	}
-
 	ctx.Response.Header.Set(fasthttp.HeaderContentType, "application/json")
 	MustWriteBytes(ctx, bytes, code)
 }
@@ -41,6 +41,33 @@ func MustReadJson[T interface{}](ctx *fasthttp.RequestCtx) *T {
 	if err := json.Unmarshal(bytes, data); err != nil {
 		panic(err)
 	}
-
 	return data
+}
+
+func ExtractPerms(ctx *fasthttp.RequestCtx) (int, error) {
+	value := ctx.UserValue("perms")
+	if value == nil {
+		return 0, domain.ErrNoPerms
+	}
+
+	perms, ok := value.(int)
+	if !ok {
+		return 0, domain.ErrNoPerms
+	}
+
+	return perms, nil
+}
+
+func ExtractId(ctx *fasthttp.RequestCtx) (string, error) {
+	value := ctx.Value("id")
+	if value == nil {
+		return "", domain.ErrNoId
+	}
+
+	id, ok := value.(string)
+	if !ok {
+		return "", domain.ErrNoId
+	}
+
+	return id, nil
 }

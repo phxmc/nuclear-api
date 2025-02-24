@@ -38,5 +38,6 @@ var (
 
 	ErrUnexpected = errors.New("unexpected error")
 
-	ErrNoPerms = errors.New("permissions does not exist")
+	ErrNoId    = errors.New("id does not exist")
+	ErrNoPerms = errors.New("perms does not exist")
 )

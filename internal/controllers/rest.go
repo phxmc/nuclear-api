@@ -66,6 +66,8 @@ func (controller *RestController) Run() error {
 		Perms:     []int{domain.PermSuper},
 		GroupMode: domain.GroupModeAll,
 	})
+	v1.GET("/pass", middlewares.Auth(controller.authApi, controller.getPass))
+	v1.GET("/pass/history", middlewares.Auth(controller.authApi, controller.getPassHistory))
 	v1.POST("/pass", middlewares.Auth(controller.authApi, passPerm.Use(controller.setPass)))
 
 	v1.GET("/avatar/{account_id}", controller.getAvatar)

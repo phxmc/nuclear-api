@@ -19,8 +19,20 @@
             padding: 0;
         }
 
-        .logo {
+        .icon {
+            width: 48px;
+            height: 48px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
             margin: 0 auto;
+        }
+
+        .icon img {
+            width: 32px;
+            height: 32px;
         }
 
         .wrapper {
@@ -45,6 +57,7 @@
 
         .title {
             color: #FFFFFF;
+            text-align: center;
         }
 
         p {
@@ -59,10 +72,10 @@
         code {
             font-family: "JetBrains Mono", monospace;
         }
-
         .block .hint {
             color: #6F7B75;
 
+            font-size: 12px;
             font-weight: bold;
             text-transform: uppercase;
         }
@@ -76,6 +89,10 @@
             padding: 12px 24px;
         }
 
+        .block .value .no-link {
+            color: #B9C0BC;
+        }
+
         .code {
             color: #16D886;
 
@@ -85,27 +102,40 @@
     </style>
 </head>
 <body>
-<div class="wrapper">
-    <h4 class="title">Подтверждение входа</h4>
-    <p style="margin-top: 24px">С вашего аккаунта осуществлена попытка входа:</p>
-
-    <div class="block" style="margin-top: 24px">
-        <p class="hint">Устройство</p>
-        <div class="value" style="margin-top: 4px">
-            <code>{{ .Device }}</code>
+    <div class="wrapper">
+        <div class="icon">
+            <img src="phxmc.png" alt="phxmc">
+            <!--
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 0H4C1.79086 0 0 1.79086 0 4V12C0 14.2091 1.79086 16 4 16H12C14.2091 16 16 17.7909 16 20V28C16 30.2091 14.2091 32 12 32H4C1.79086 32 0 33.7909 0 36V44C0 46.2091 1.79086 48 4 48H12C14.2091 48 16 46.2091 16 44V36C16 33.7909 17.7909 32 20 32H28C30.2091 32 32 33.7909 32 36V44C32 46.2091 33.7909 48 36 48H44C46.2091 48 48 46.2091 48 44V36C48 33.7909 46.2091 32 44 32H36C33.7909 32 32 30.2091 32 28V20C32 17.7909 33.7909 16 36 16H44C46.2091 16 48 14.2091 48 12V4C48 1.79086 46.2091 0 44 0H36C33.7909 0 32 1.79086 32 4V12C32 14.2091 30.2091 16 28 16H20C17.7909 16 16 14.2091 16 12V4C16 1.79086 14.2091 0 12 0Z" fill="#16D886" />
+            </svg>
+            -->
         </div>
-    </div>
 
-    <div class="block" style="margin-top: 24px">
-        <p class="hint">Дата и время</p>
-        <div class="value" style="margin-top: 4px">
-            <code>{{ .DateTime }}</code>
+        <h4 class="title">Подтверждение входа</h4>
+        <p style="margin-top: 24px">С вашего аккаунта осуществлена попытка входа:</p>
+
+        <div class="block" style="margin-top: 24px">
+            <p class="hint">Устройство</p>
+            <div class="value" style="margin-top: 4px">
+                <code>
+                    <a class="no-link" style="text-decoration: none">
+                        {{ .Device }}
+                    </a>
+                </code>
+            </div>
         </div>
+
+        <div class="block" style="margin-top: 24px">
+            <p class="hint">Дата и время</p>
+            <div class="value" style="margin-top: 4px">
+                <code>{{ .DateTime }}</code>
+            </div>
+        </div>
+
+        <h4 class="code" style="margin-top: 24px">{{ .Code }}</h4>
+
+        <p style="margin-top: 24px">Не делитесь этим кодом ни с кем, включая агентов поддержки. Код будет активен некоторое время.</p>
     </div>
-
-    <h4 class="code" style="margin-top: 24px">{{ .Code }}</h4>
-
-    <p style="margin-top: 24px">Не делитесь этим кодом ни с кем, включая агентов поддержки. Код будет активен некоторое время.</p>
-</div>
 </body>
 </html>
