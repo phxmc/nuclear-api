@@ -1,0 +1,11 @@
+BEGIN;
+
+CREATE TABLE account_nicknames (
+    id SERIAL PRIMARY KEY,
+    account_id CHAR(42) NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+    nickname VARCHAR(16) NOT NULL,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+COMMIT;

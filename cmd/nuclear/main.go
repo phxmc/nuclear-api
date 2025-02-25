@@ -30,6 +30,7 @@ func main() {
 	tokenRepo := redis.NewTokenRepo(redisClient)
 	staticRepo := disk.NewStaticRepo()
 	passRepo := postgres.NewPassRepo(postgresPool)
+	nicknameRepo := postgres.NewNicknameRepo(postgresPool)
 
 	log, err := logger.NewZerolog()
 	if err != nil {
@@ -54,6 +55,11 @@ func main() {
 		Log(log).
 		Build()
 
+	nicknameApi := builders.NewNicknameApiBuilder().
+		NicknameRepo(nicknameRepo).
+		Log(log).
+		Build()
+
 	staticApi := services.NewStaticService(staticRepo)
 
 	emailApi := services.NewEmailService(
@@ -63,7 +69,7 @@ func main() {
 		typedenv.String("SMTP_PORT"),
 	)
 
-	rest := controllers.NewRestController(typedenv.String("NUCLEAR_ADDR"), authApi, accountApi, emailApi, staticApi, passApi, log)
+	rest := controllers.NewRestController(typedenv.String("NUCLEAR_ADDR"), authApi, accountApi, emailApi, staticApi, passApi, nicknameApi, log)
 	if err := rest.Run(); err != nil {
 		panic(err)
 	}
