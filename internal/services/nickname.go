@@ -6,6 +6,7 @@ import (
 	"github.com/orewaee/nuclear-api/internal/app/api"
 	"github.com/orewaee/nuclear-api/internal/app/domain"
 	"github.com/orewaee/nuclear-api/internal/app/repo"
+	"github.com/orewaee/typedenv"
 	"github.com/rs/zerolog"
 	"time"
 )
@@ -58,12 +59,24 @@ func (service *NicknameService) GetNicknameHistoryByAccountId(ctx context.Contex
 }
 
 func (service *NicknameService) SetNickname(ctx context.Context, accountId, nickname string) (*domain.Nickname, error) {
+	oldNickname, err := service.GetNicknameByAccountId(ctx, accountId)
+	if err != nil {
+		return nil, err
+	}
+
+	now := time.Now()
+	cooldown := typedenv.Duration("NICKNAME_COOLDOWN", time.Hour*24*7)
+	deadline := oldNickname.CreatedAt.Add(cooldown)
+	if deadline.After(now) {
+		return nil, domain.ErrNicknameCooldown
+	}
+
 	newNickname := &domain.Nickname{
 		Value:     nickname,
 		CreatedAt: time.Now(),
 	}
 
-	err := service.nicknameRepo.SetNickname(ctx, accountId, newNickname)
+	err = service.nicknameRepo.SetNickname(ctx, accountId, newNickname)
 
 	if err == nil {
 		return newNickname, nil

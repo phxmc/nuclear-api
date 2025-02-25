@@ -20,6 +20,6 @@ type NicknameApi interface {
 	// SetNickname creates a new nickname and sets it to the specified account.
 	// If an active nickname was associated with the account, it will be marked as inactive.
 	//
-	// May return domain.ErrNoAccount.
+	// May return domain.ErrNoAccount, domain.ErrNicknameCooldown.
 	SetNickname(ctx context.Context, accountId, nickname string) (*domain.Nickname, error)
 }

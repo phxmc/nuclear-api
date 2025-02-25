@@ -134,9 +134,9 @@ func (controller *RestController) setNickname(ctx *fasthttp.RequestCtx) {
 		case errors.Is(err, domain.ErrNoAccount):
 			response.Message = err.Error()
 			code = http.StatusNotFound
-		case errors.Is(err, domain.ErrPassExist):
+		case errors.Is(err, domain.ErrNicknameCooldown):
 			response.Message = err.Error()
-			code = http.StatusConflict
+			code = http.StatusTooManyRequests
 		default:
 			controller.log.Error().Err(err).Send()
 			response.Message = domain.ErrUnexpected.Error()

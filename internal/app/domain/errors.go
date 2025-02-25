@@ -14,7 +14,8 @@ var (
 	ErrPassExist = errors.New("pass already exists")
 	ErrNoPass    = errors.New("pass does not exist")
 
-	ErrNoNickname = errors.New("nickname does not exists")
+	ErrNoNickname       = errors.New("nickname does not exists")
+	ErrNicknameCooldown = errors.New("nickname change cooldown")
 
 	ErrInvalidPass = errors.New("invalid pass")
 
