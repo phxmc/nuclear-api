@@ -129,7 +129,40 @@ func (repo *NicknameRepo) GetNicknameHistoryByAccountId(ctx context.Context, acc
 		return nil, err
 	}
 
-	return nicknames, err
+	if err := tx.Commit(ctx); err != nil {
+		return nil, err
+	}
+
+	return nicknames, nil
+}
+
+func (repo *NicknameRepo) NicknameExists(ctx context.Context, nickname string) (bool, error) {
+	tx, err := repo.pool.Begin(ctx)
+	if err != nil {
+		return false, err
+	}
+
+	defer func() {
+		if err != nil {
+			tx.Rollback(ctx)
+		}
+	}()
+
+	exists := false
+
+	err = tx.
+		QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM account_nicknames WHERE nickname = $1 AND is_active = TRUE)", nickname).
+		Scan(&exists)
+
+	if err != nil {
+		return false, err
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return false, err
+	}
+
+	return exists, nil
 }
 
 func (repo *NicknameRepo) SetNickname(ctx context.Context, accountId string, nickname *domain.Nickname) error {

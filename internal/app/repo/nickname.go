@@ -16,6 +16,9 @@ type NicknameReader interface {
 	//
 	// May return domain.ErrNoAccount.
 	GetNicknameHistoryByAccountId(ctx context.Context, accountId string) ([]*domain.Nickname, error)
+
+	// NicknameExists returns a bool value indicating the existence of the specified nickname.
+	NicknameExists(ctx context.Context, nickname string) (bool, error)
 }
 
 type NicknameWriter interface {

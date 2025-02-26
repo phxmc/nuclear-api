@@ -17,9 +17,12 @@ type NicknameApi interface {
 	// May return domain.ErrNoAccount.
 	GetNicknameHistoryByAccountId(ctx context.Context, accountId string) ([]*domain.Nickname, error)
 
+	// NicknameExists returns a bool value indicating the existence of the specified nickname.
+	NicknameExists(ctx context.Context, nickname string) (bool, error)
+
 	// SetNickname creates a new nickname and sets it to the specified account.
 	// If an active nickname was associated with the account, it will be marked as inactive.
 	//
-	// May return domain.ErrNoAccount, domain.ErrNicknameCooldown.
+	// May return domain.ErrNoAccount, domain.ErrNicknameCooldown, domain.ErrNicknameExist.
 	SetNickname(ctx context.Context, accountId, nickname string) (*domain.Nickname, error)
 }

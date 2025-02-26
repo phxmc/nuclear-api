@@ -58,17 +58,48 @@ func (service *NicknameService) GetNicknameHistoryByAccountId(ctx context.Contex
 	return nil, err
 }
 
+func (service *NicknameService) NicknameExists(ctx context.Context, nickname string) (bool, error) {
+	exists, err := service.nicknameRepo.NicknameExists(ctx, nickname)
+	if err != nil {
+		service.log.Error().Err(err).Send()
+		return false, nil
+	}
+
+	return exists, nil
+}
+
 func (service *NicknameService) SetNickname(ctx context.Context, accountId, nickname string) (*domain.Nickname, error) {
+	hasNickname := true
 	oldNickname, err := service.GetNicknameByAccountId(ctx, accountId)
+	if err != nil {
+		switch {
+		case errors.Is(err, domain.ErrNoAccount):
+			return nil, err
+		case errors.Is(err, domain.ErrNoNickname):
+			hasNickname = false
+			err = nil
+		default:
+			service.log.Error().Err(err).Send()
+			return nil, err
+		}
+	}
+
+	if hasNickname {
+		now := time.Now()
+		cooldown := typedenv.Duration("NICKNAME_COOLDOWN", time.Hour*24*7)
+		deadline := oldNickname.CreatedAt.Add(cooldown)
+		if deadline.After(now) {
+			return nil, domain.ErrNicknameCooldown
+		}
+	}
+
+	exists, err := service.nicknameRepo.NicknameExists(ctx, nickname)
 	if err != nil {
 		return nil, err
 	}
 
-	now := time.Now()
-	cooldown := typedenv.Duration("NICKNAME_COOLDOWN", time.Hour*24*7)
-	deadline := oldNickname.CreatedAt.Add(cooldown)
-	if deadline.After(now) {
-		return nil, domain.ErrNicknameCooldown
+	if exists {
+		return nil, domain.ErrNicknameExist
 	}
 
 	newNickname := &domain.Nickname{
@@ -77,7 +108,6 @@ func (service *NicknameService) SetNickname(ctx context.Context, accountId, nick
 	}
 
 	err = service.nicknameRepo.SetNickname(ctx, accountId, newNickname)
-
 	if err == nil {
 		return newNickname, nil
 	}
