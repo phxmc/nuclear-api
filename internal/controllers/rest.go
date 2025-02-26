@@ -11,13 +11,14 @@ import (
 )
 
 type RestController struct {
-	addr       string
-	authApi    api.AuthApi
-	accountApi api.AccountApi
-	emailApi   api.EmailApi
-	staticApi  api.StaticApi
-	passApi    api.PassApi
-	log        *zerolog.Logger
+	addr        string
+	authApi     api.AuthApi
+	accountApi  api.AccountApi
+	emailApi    api.EmailApi
+	staticApi   api.StaticApi
+	passApi     api.PassApi
+	nicknameApi api.NicknameApi
+	log         *zerolog.Logger
 }
 
 func NewRestController(
@@ -27,6 +28,7 @@ func NewRestController(
 	emailApi api.EmailApi,
 	staticApi api.StaticApi,
 	passApi api.PassApi,
+	nicknameApi api.NicknameApi,
 	log *zerolog.Logger) *RestController {
 	return &RestController{
 		addr,
@@ -35,6 +37,7 @@ func NewRestController(
 		emailApi,
 		staticApi,
 		passApi,
+		nicknameApi,
 		log,
 	}
 }
@@ -69,6 +72,10 @@ func (controller *RestController) Run() error {
 	v1.GET("/pass", middlewares.Auth(controller.authApi, controller.getPass))
 	v1.GET("/pass/history", middlewares.Auth(controller.authApi, controller.getPassHistory))
 	v1.POST("/pass", middlewares.Auth(controller.authApi, passPerm.Use(controller.setPass)))
+
+	v1.GET("/nickname", middlewares.Auth(controller.authApi, controller.getNickname))
+	v1.GET("/nickname/history", middlewares.Auth(controller.authApi, controller.getNicknameHistory))
+	v1.POST("/nickname", middlewares.Auth(controller.authApi, controller.setNickname))
 
 	v1.GET("/avatar/{account_id}", controller.getAvatar)
 	v1.POST("/avatar", middlewares.Auth(controller.authApi, controller.setAvatar))
