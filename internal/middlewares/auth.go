@@ -11,7 +11,17 @@ import (
 	"strings"
 )
 
-func Auth(authApi api.AuthApi, handler fasthttp.RequestHandler) fasthttp.RequestHandler {
+type AuthMiddleware struct {
+	authApi api.AuthApi
+}
+
+func NewAuthMiddleware(authApi api.AuthApi) Middleware {
+	return &AuthMiddleware{
+		authApi: authApi,
+	}
+}
+
+func (middleware *AuthMiddleware) Use(handler fasthttp.RequestHandler) fasthttp.RequestHandler {
 	return func(ctx *fasthttp.RequestCtx) {
 		header := string(ctx.Request.Header.Peek("Authorization"))
 		if header == "" {
@@ -33,7 +43,7 @@ func Auth(authApi api.AuthApi, handler fasthttp.RequestHandler) fasthttp.Request
 			return
 		}
 
-		claims, err := authApi.GetTokenClaims(accessToken, typedenv.String("ACCESS_KEY"))
+		claims, err := middleware.authApi.GetTokenClaims(accessToken, typedenv.String("ACCESS_KEY"))
 		if err != nil {
 			response := &dto.Error{Message: "invalid token"}
 			utils.MustWriteJson(ctx, response, fasthttp.StatusUnauthorized)

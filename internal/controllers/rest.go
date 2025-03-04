@@ -63,25 +63,29 @@ func (controller *RestController) Run() error {
 	v1.POST("/login/code", controller.loginCode)
 	v1.POST("/refresh", controller.refresh)
 
-	v1.GET("/me", middlewares.Auth(controller.authApi, controller.me))
+	authMiddleware := middlewares.NewAuthMiddleware(controller.authApi)
 
-	passPerm := middlewares.NewPermMiddleware(&domain.PermGroup{
+	v1.GET("/me", authMiddleware.Use(controller.me))
+
+	passPermMiddleware := middlewares.NewPermMiddleware(&domain.PermGroup{
 		Perms:     []int{domain.PermSuper},
 		GroupMode: domain.GroupModeAll,
 	})
-	v1.GET("/pass", middlewares.Auth(controller.authApi, controller.getPass))
-	v1.GET("/pass/history", middlewares.Auth(controller.authApi, controller.getPassHistory))
-	v1.POST("/pass", middlewares.Auth(controller.authApi, passPerm.Use(controller.setPass)))
+	v1.GET("/pass", authMiddleware.Use(controller.getPass))
+	v1.GET("/pass/history", authMiddleware.Use(controller.getPassHistory))
+	v1.POST("/pass", authMiddleware.Use(passPermMiddleware.Use(controller.setPass)))
 
-	v1.GET("/nickname", middlewares.Auth(controller.authApi, controller.getNickname))
-	v1.GET("/nickname/history", middlewares.Auth(controller.authApi, controller.getNicknameHistory))
-	v1.POST("/nickname", middlewares.Auth(controller.authApi, controller.setNickname))
+	v1.GET("/nickname", authMiddleware.Use(controller.getNickname))
+	v1.GET("/nickname/history", authMiddleware.Use(controller.getNicknameHistory))
+	v1.POST("/nickname", authMiddleware.Use(controller.setNickname))
 
 	v1.GET("/avatar/{account_id}", controller.getAvatar)
-	v1.POST("/avatar", middlewares.Auth(controller.authApi, controller.setAvatar))
+	v1.POST("/avatar", authMiddleware.Use(controller.setAvatar))
 
 	v1.GET("/banner/{account_id}", controller.getBanner)
-	v1.POST("/banner", middlewares.Auth(controller.authApi, controller.setBanner))
+	v1.POST("/banner", authMiddleware.Use(controller.setBanner))
+
+	v1.POST("/mc/join", authMiddleware.Use(controller.join))
 
 	controller.log.Info().Msgf("running app on addr %s", controller.addr)
 	return fasthttp.ListenAndServe(controller.addr, middlewares.Cors(middlewares.Log(controller.log, router.Handler)))
