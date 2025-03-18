@@ -18,31 +18,19 @@ func NewAccountRepo(pool *pgxpool.Pool) repo.AccountReadWriter {
 }
 
 func (repo *AccountRepo) GetAccountById(ctx context.Context, id string) (*domain.Account, error) {
-	tx, err := repo.pool.Begin(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	defer func() {
-		if err != nil {
-			tx.Rollback(ctx)
-		}
-	}()
-
 	account := new(domain.Account)
-	err = tx.
-		QueryRow(ctx, "SELECT * FROM accounts WHERE id = $1", id).
-		Scan(&account.Id, &account.Email, &account.Perms, &account.CreatedAt)
+	err := withTx(ctx, repo.pool, func(tx pgx.Tx) error {
+		err := tx.
+			QueryRow(ctx, "SELECT * FROM accounts WHERE id = $1", id).
+			Scan(&account.Id, &account.Email, &account.Perms, &account.CreatedAt)
 
-	if err != nil && errors.Is(err, pgx.ErrNoRows) {
-		return nil, domain.ErrNoAccount
-	}
+		if err != nil && errors.Is(err, pgx.ErrNoRows) {
+			return domain.ErrNoAccount
+		}
 
-	if err != nil {
-		return nil, err
-	}
+		return err
+	})
 
-	err = tx.Commit(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -51,31 +39,19 @@ func (repo *AccountRepo) GetAccountById(ctx context.Context, id string) (*domain
 }
 
 func (repo *AccountRepo) GetAccountByEmail(ctx context.Context, email string) (*domain.Account, error) {
-	tx, err := repo.pool.Begin(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	defer func() {
-		if err != nil {
-			tx.Rollback(ctx)
-		}
-	}()
-
 	account := new(domain.Account)
-	err = tx.
-		QueryRow(ctx, "SELECT * FROM accounts WHERE email = $1", email).
-		Scan(&account.Id, &account.Email, &account.Perms, &account.CreatedAt)
+	err := withTx(ctx, repo.pool, func(tx pgx.Tx) error {
+		err := tx.
+			QueryRow(ctx, "SELECT * FROM accounts WHERE email = $1", email).
+			Scan(&account.Id, &account.Email, &account.Perms, &account.CreatedAt)
 
-	if err != nil && errors.Is(err, pgx.ErrNoRows) {
-		return nil, domain.ErrNoAccount
-	}
+		if err != nil && errors.Is(err, pgx.ErrNoRows) {
+			return domain.ErrNoAccount
+		}
 
-	if err != nil {
-		return nil, err
-	}
+		return err
+	})
 
-	err = tx.Commit(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -84,27 +60,13 @@ func (repo *AccountRepo) GetAccountByEmail(ctx context.Context, email string) (*
 }
 
 func (repo *AccountRepo) AccountExistsByEmail(ctx context.Context, email string) (bool, error) {
-	tx, err := repo.pool.Begin(ctx)
-	if err != nil {
-		return false, err
-	}
-
-	defer func() {
-		if err != nil {
-			tx.Rollback(ctx)
-		}
-	}()
-
 	exists := false
-	err = tx.
-		QueryRow(ctx, "SElECT EXISTS(SELECT 1 FROM accounts WHERE email = $1)", email).
-		Scan(&exists)
+	err := withTx(ctx, repo.pool, func(tx pgx.Tx) error {
+		return tx.
+			QueryRow(ctx, "SElECT EXISTS(SELECT 1 FROM accounts WHERE email = $1)", email).
+			Scan(&exists)
+	})
 
-	if err != nil {
-		return false, err
-	}
-
-	err = tx.Commit(ctx)
 	if err != nil {
 		return false, err
 	}
@@ -113,23 +75,12 @@ func (repo *AccountRepo) AccountExistsByEmail(ctx context.Context, email string)
 }
 
 func (repo *AccountRepo) AddAccount(ctx context.Context, account *domain.Account) error {
-	tx, err := repo.pool.Begin(ctx)
-	if err != nil {
+	err := withTx(ctx, repo.pool, func(tx pgx.Tx) error {
+		_, err := tx.Exec(ctx, "INSERT INTO accounts (id, email, perms, created_at) VALUES ($1, $2, $3, $4)",
+			&account.Id, &account.Email, &account.Perms, &account.CreatedAt)
+
 		return err
-	}
+	})
 
-	defer func() {
-		if err != nil {
-			tx.Rollback(ctx)
-		}
-	}()
-
-	_, err = tx.Exec(ctx, "INSERT INTO accounts (id, email, perms, created_at) VALUES ($1, $2, $3, $4)",
-		&account.Id, &account.Email, &account.Perms, &account.CreatedAt)
-
-	if err != nil {
-		return err
-	}
-
-	return tx.Commit(ctx)
+	return err
 }
