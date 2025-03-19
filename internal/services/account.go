@@ -164,6 +164,16 @@ func (service *AccountService) GetAccountByEmail(ctx context.Context, email stri
 	return nil, err
 }
 
+func (service *AccountService) AccountExistsById(ctx context.Context, id string) (bool, error) {
+	exists, err := service.accountRepo.AccountExistsById(ctx, id)
+
+	if err != nil {
+		service.log.Error().Err(err).Send()
+	}
+
+	return exists, err
+}
+
 func (service *AccountService) AccountExistsByEmail(ctx context.Context, email string) (bool, error) {
 	exists, err := service.accountRepo.AccountExistsByEmail(ctx, email)
 

@@ -1,0 +1,6 @@
+BEGIN;
+
+ALTER TABLE accounts
+ADD COLUMN telegram_id BIGINT UNIQUE;
+
+COMMIT;
