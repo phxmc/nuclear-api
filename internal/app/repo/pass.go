@@ -13,7 +13,7 @@ type PassReader interface {
 
 	// GetPassByAccountId returns the active pass for the specified account.
 	//
-	// May return domain.ErrNoAccount, domain.ErrNoPass.
+	// May return domain.ErrNoAccount, domain.ErrNoPass, domain.ErrInvalidPass.
 	GetPassByAccountId(ctx context.Context, accountId string) (*domain.Pass, error)
 
 	// GetPassHistoryByAccountId returns the pass history for the specified account in chronological order.

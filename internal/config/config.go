@@ -22,6 +22,8 @@ func MustLoad() {
 
 	typedenv.DefaultString("NUCLEAR_ADDR", ":8080")
 
+	typedenv.DefaultDuration("NICKNAME_COOLDOWN", time.Hour*24*7)
+
 	typedenv.DefaultDuration("ACCESS_LIFETIME", time.Minute*10)
 	typedenv.DefaultDuration("REFRESH_LIFETIME", time.Hour*24)
 

@@ -85,7 +85,9 @@ func (controller *RestController) Run() error {
 	v1.GET("/banner/{account_id}", controller.getBanner)
 	v1.POST("/banner", authMiddleware.Use(controller.setBanner))
 
-	v1.POST("/mc/join", authMiddleware.Use(controller.join))
+	apiKeyMiddleware := middlewares.NewApiKeyMiddleware()
+
+	v1.POST("/mc/join", apiKeyMiddleware.Use(controller.join))
 
 	controller.log.Info().Msgf("running app on addr %s", controller.addr)
 	return fasthttp.ListenAndServe(controller.addr, middlewares.Cors(middlewares.Log(controller.log, router.Handler)))

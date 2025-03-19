@@ -7,6 +7,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/orewaee/nuclear-api/internal/app/domain"
 	"github.com/orewaee/nuclear-api/internal/app/repo"
+	"github.com/orewaee/nuclear-api/internal/utils"
 )
 
 type PassRepo struct {
@@ -73,6 +74,10 @@ func (repo *PassRepo) GetPassByAccountId(ctx context.Context, accountId string) 
 	})
 
 	if err != nil {
+		return nil, err
+	}
+
+	if err := utils.ValidatePass(pass); err != nil {
 		return nil, err
 	}
 

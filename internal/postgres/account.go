@@ -59,6 +59,21 @@ func (repo *AccountRepo) GetAccountByEmail(ctx context.Context, email string) (*
 	return account, nil
 }
 
+func (repo *AccountRepo) AccountExistsById(ctx context.Context, id string) (bool, error) {
+	exists := false
+	err := withTx(ctx, repo.pool, func(tx pgx.Tx) error {
+		return tx.
+			QueryRow(ctx, "SElECT EXISTS(SELECT 1 FROM accounts WHERE id = $1)", id).
+			Scan(&exists)
+	})
+
+	if err != nil {
+		return false, err
+	}
+
+	return exists, nil
+}
+
 func (repo *AccountRepo) AccountExistsByEmail(ctx context.Context, email string) (bool, error) {
 	exists := false
 	err := withTx(ctx, repo.pool, func(tx pgx.Tx) error {

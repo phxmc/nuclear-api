@@ -32,6 +32,9 @@ type AccountApi interface {
 	// May return domain.ErrNoAccount.
 	GetAccountByEmail(ctx context.Context, email string) (*domain.Account, error)
 
+	// AccountExistsById returns the bool value of the existence of an account with the specified id.
+	AccountExistsById(ctx context.Context, id string) (bool, error)
+
 	// AccountExistsByEmail returns the bool value of the existence of an account with the specified email.
 	AccountExistsByEmail(ctx context.Context, email string) (bool, error)
 }
