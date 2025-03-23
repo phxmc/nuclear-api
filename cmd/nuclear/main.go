@@ -12,6 +12,7 @@ import (
 	"github.com/orewaee/nuclear-api/internal/postgres"
 	"github.com/orewaee/nuclear-api/internal/redis"
 	"github.com/orewaee/nuclear-api/internal/services"
+	"github.com/orewaee/nuclear-api/internal/telegram"
 	"github.com/orewaee/typedenv"
 	goredis "github.com/redis/go-redis/v9"
 )
@@ -31,6 +32,7 @@ func main() {
 	staticRepo := disk.NewStaticRepo()
 	passRepo := postgres.NewPassRepo(postgresPool)
 	nicknameRepo := postgres.NewNicknameRepo(postgresPool)
+	telegramRepo := redis.NewTelegramRepo(redisClient)
 
 	log, err := logger.NewZerolog()
 	if err != nil {
@@ -60,6 +62,11 @@ func main() {
 		Log(log).
 		Build()
 
+	telegramApi := builders.NewTelegramApiBuilder().
+		TelegramRepo(telegramRepo).
+		Log(log).
+		Build()
+
 	staticApi := services.NewStaticService(staticRepo)
 
 	emailApi := services.NewEmailService(
@@ -68,6 +75,15 @@ func main() {
 		typedenv.String("SMTP_HOST"),
 		typedenv.String("SMTP_PORT"),
 	)
+
+	bot := telegram.NewBot(accountApi, telegramApi, emailApi, log)
+
+	go func() {
+		err = bot.Run(ctx, typedenv.String("TELEGRAM_TOKEN"))
+		if err != nil {
+			panic(err)
+		}
+	}()
 
 	rest := controllers.NewRestController(typedenv.String("NUCLEAR_ADDR"), authApi, accountApi, emailApi, staticApi, passApi, nicknameApi, log)
 	if err := rest.Run(); err != nil {

@@ -32,9 +32,17 @@ type AccountApi interface {
 	// May return domain.ErrNoAccount.
 	GetAccountByEmail(ctx context.Context, email string) (*domain.Account, error)
 
+	// GetAccountByTelegramId returns the account with the specified telegramId.
+	//
+	// May return domain.ErrNoAccount.
+	GetAccountByTelegramId(ctx context.Context, telegramId int64) (*domain.Account, error)
+
 	// AccountExistsById returns the bool value of the existence of an account with the specified id.
 	AccountExistsById(ctx context.Context, id string) (bool, error)
 
 	// AccountExistsByEmail returns the bool value of the existence of an account with the specified email.
 	AccountExistsByEmail(ctx context.Context, email string) (bool, error)
+
+	// AccountExistsByTelegramId returns the bool value of the existence of an account with the specified telegramId.
+	AccountExistsByTelegramId(ctx context.Context, telegramId int64) (bool, error)
 }

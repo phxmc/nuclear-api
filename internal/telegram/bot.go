@@ -4,21 +4,32 @@ import (
 	"context"
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"github.com/orewaee/nuclear-api/internal/app/api"
 	"github.com/orewaee/nuclear-api/internal/app/driving"
 	"github.com/orewaee/nuclear-api/internal/broker"
 	"github.com/rs/zerolog"
 )
 
 type Bot struct {
-	broker *broker.Broker[string]
-	api    *tgbotapi.BotAPI
-	log    *zerolog.Logger
+	broker      *broker.Broker[string]
+	api         *tgbotapi.BotAPI
+	accountApi  api.AccountApi
+	telegramApi api.TelegramApi
+	emailApi    api.EmailApi
+	log         *zerolog.Logger
 }
 
-func NewBot(log *zerolog.Logger) driving.Bot {
+func NewBot(
+	accountApi api.AccountApi,
+	telegramApi api.TelegramApi,
+	emailApi api.EmailApi,
+	log *zerolog.Logger) driving.Bot {
 	return &Bot{
-		broker: broker.New[string](),
-		log:    log,
+		broker:      broker.New[string](),
+		accountApi:  accountApi,
+		telegramApi: telegramApi,
+		emailApi:    emailApi,
+		log:         log,
 	}
 }
 
@@ -51,7 +62,28 @@ func (bot *Bot) Run(ctx context.Context, token string) error {
 
 	for update := range updates {
 		message := update.Message
-		fmt.Println(message)
+		if message == nil {
+			continue
+		}
+
+		chatState, ok := bot.telegramApi.GetChatState(ctx, message.Chat.ID)
+		if ok {
+			bot.handle(update, chatState)
+		} else {
+			var cmd func(tgbotapi.Update)
+			switch message.Text {
+			case "/info":
+				cmd = bot.info
+			case "/help":
+				cmd = bot.help
+			case "/link":
+				cmd = bot.link
+			default:
+				cmd = bot.plain
+			}
+
+			cmd(update)
+		}
 	}
 
 	return nil

@@ -99,10 +99,11 @@ func (service *AccountService) SaveTempAccount(ctx context.Context, email, code 
 	}
 
 	account := &domain.Account{
-		Id:        utils.MustNewId(),
-		Email:     email,
-		Perms:     domain.PermDefault,
-		CreatedAt: time.Now(),
+		Id:         utils.MustNewId(),
+		Email:      email,
+		TelegramId: nil,
+		Perms:      domain.PermDefault,
+		CreatedAt:  time.Now(),
 	}
 
 	err = service.accountRepo.AddAccount(ctx, account)
@@ -150,7 +151,21 @@ func (service *AccountService) GetAccountById(ctx context.Context, id string) (*
 
 func (service *AccountService) GetAccountByEmail(ctx context.Context, email string) (*domain.Account, error) {
 	account, err := service.accountRepo.GetAccountByEmail(ctx, email)
+	if err == nil {
+		return account, nil
+	}
 
+	switch {
+	case errors.Is(err, domain.ErrNoAccount):
+	default:
+		service.log.Error().Err(err).Send()
+	}
+
+	return nil, err
+}
+
+func (service *AccountService) GetAccountByTelegramId(ctx context.Context, telegramId int64) (*domain.Account, error) {
+	account, err := service.accountRepo.GetAccountByTelegramId(ctx, telegramId)
 	if err == nil {
 		return account, nil
 	}
@@ -166,20 +181,30 @@ func (service *AccountService) GetAccountByEmail(ctx context.Context, email stri
 
 func (service *AccountService) AccountExistsById(ctx context.Context, id string) (bool, error) {
 	exists, err := service.accountRepo.AccountExistsById(ctx, id)
-
 	if err != nil {
 		service.log.Error().Err(err).Send()
+		return false, err
 	}
 
-	return exists, err
+	return exists, nil
 }
 
 func (service *AccountService) AccountExistsByEmail(ctx context.Context, email string) (bool, error) {
 	exists, err := service.accountRepo.AccountExistsByEmail(ctx, email)
-
 	if err != nil {
 		service.log.Error().Err(err).Send()
+		return false, err
 	}
 
-	return exists, err
+	return exists, nil
+}
+
+func (service *AccountService) AccountExistsByTelegramId(ctx context.Context, telegramId int64) (bool, error) {
+	exists, err := service.accountRepo.AccountExistsByTelegramId(ctx, telegramId)
+	if err != nil {
+		service.log.Error().Err(err).Send()
+		return false, err
+	}
+
+	return exists, nil
 }

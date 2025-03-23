@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/orewaee/nuclear-api/internal/app/domain"
 	"github.com/orewaee/nuclear-api/internal/builders"
 	"github.com/orewaee/nuclear-api/internal/config"
 	"github.com/orewaee/nuclear-api/internal/logger"
@@ -11,17 +12,17 @@ import (
 	"github.com/orewaee/nuclear-api/internal/redis"
 	"github.com/orewaee/typedenv"
 	goredis "github.com/redis/go-redis/v9"
+	"time"
 )
 
 func main() {
 	config.MustLoad()
 
-	ctx := context.Background()
+	ctx := context.TODO()
 
 	postgresPool := mustInitPostgresPool(ctx)
 
 	accountRepo := postgres.NewAccountRepo(postgresPool)
-	passRepo := postgres.NewPassRepo(postgresPool)
 
 	redisClient := mustInitRedisClient(ctx)
 
@@ -38,37 +39,12 @@ func main() {
 		Log(log).
 		Build()
 
-	passApi := builders.NewPassApiBuilder().
-		PassRepo(passRepo).
-		Log(log).
-		Build()
+	_, _ = accountApi.GetAccountById(ctx, "")
 
-	/*
-		email := "twd.name@gmail.com"
-		tempAccount, deadline, err := accountApi.AddTempAccount(ctx, email, time.Second*30)
-		if err != nil {
-			panic(err)
-		}
+	telegramRepo := redis.NewTelegramRepo(redisClient)
 
-		fmt.Printf("DEADLINE: %+v\n", deadline)
-
-		fmt.Println(accountApi.SaveTempAccount(ctx, email, tempAccount.Code))
-
-	*/
-
-	account, err := accountApi.GetAccountByEmail(ctx, "twd.name@gmail.com")
-	if err != nil {
-		panic(err)
-	}
-
-	passes, err := passApi.GetPassHistoryByAccountId(ctx, account.Id)
-	if err != nil {
-		panic(err)
-	}
-
-	for _, pass := range passes {
-		fmt.Printf("%+v\n", pass)
-	}
+	fmt.Println(telegramRepo.SetChatState(ctx, 123, domain.StateEnterCode, time.Second*15))
+	fmt.Println(telegramRepo.GetChatState(ctx, 123))
 }
 
 func mustInitPostgresPool(ctx context.Context) *pgxpool.Pool {
