@@ -2,6 +2,7 @@ package telegram
 
 import (
 	"context"
+	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/orewaee/nuclear-api/internal/app/api"
@@ -17,20 +18,23 @@ type Bot struct {
 	accountApi  api.AccountApi
 	telegramApi api.TelegramApi
 	emailApi    api.EmailApi
+	passApi     api.PassApi
 	log         *zerolog.Logger
 }
 
 func NewBot(
+	messageBroker *broker.Broker[*domain.Message],
 	accountApi api.AccountApi,
 	telegramApi api.TelegramApi,
 	emailApi api.EmailApi,
-	messageBroker *broker.Broker[*domain.Message],
+	passApi api.PassApi,
 	log *zerolog.Logger) driving.Bot {
 	return &Bot{
 		broker:      messageBroker,
 		accountApi:  accountApi,
 		telegramApi: telegramApi,
 		emailApi:    emailApi,
+		passApi:     passApi,
 		log:         log,
 	}
 }
@@ -74,16 +78,17 @@ func (bot *Bot) Run(ctx context.Context, token string) error {
 			bot.handle(update, chatState)
 		} else {
 			var cmd func(tgbotapi.Update)
-			switch message.Text {
-			case "/info":
+			text := message.Text
+			switch {
+			case text == "/info":
 				cmd = bot.info
-			case "/help":
+			case text == "/help":
 				cmd = bot.help
-			case "/link":
+			case text == "/link":
 				cmd = bot.link
-			case "/me":
+			case text == "/me":
 				cmd = bot.me
-			case "/pass":
+			case strings.HasPrefix(text, "/pass"):
 				cmd = bot.pass
 			default:
 				cmd = bot.plain

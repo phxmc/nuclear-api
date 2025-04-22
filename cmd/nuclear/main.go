@@ -84,7 +84,7 @@ func main() {
 		Log(log).
 		Build()
 
-	bot := telegram.NewBot(accountApi, telegramApi, emailApi, messageBroker, log)
+	bot := telegram.NewBot(messageBroker, accountApi, telegramApi, emailApi, passApi, log)
 
 	go func() {
 		err = bot.Run(ctx, typedenv.String("TELEGRAM_TOKEN"))
