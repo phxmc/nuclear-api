@@ -208,3 +208,18 @@ func (service *AccountService) AccountExistsByTelegramId(ctx context.Context, te
 
 	return exists, nil
 }
+
+func (service *AccountService) SetAccountTelegramId(ctx context.Context, accountId string, telegramId int64) error {
+	err := service.accountRepo.SetAccountTelegramId(ctx, accountId, telegramId)
+	if err == nil {
+		return nil
+	}
+
+	switch {
+	case errors.Is(err, domain.ErrNoAccount):
+	default:
+		service.log.Error().Err(err).Send()
+	}
+
+	return err
+}

@@ -45,4 +45,6 @@ type AccountApi interface {
 
 	// AccountExistsByTelegramId returns the bool value of the existence of an account with the specified telegramId.
 	AccountExistsByTelegramId(ctx context.Context, telegramId int64) (bool, error)
+
+	SetAccountTelegramId(ctx context.Context, accountId string, telegramId int64) error
 }

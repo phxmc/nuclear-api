@@ -3,7 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
+
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/orewaee/nuclear-api/internal/app/domain"
+	"github.com/orewaee/nuclear-api/internal/broker"
 	"github.com/orewaee/nuclear-api/internal/builders"
 	"github.com/orewaee/nuclear-api/internal/config"
 	"github.com/orewaee/nuclear-api/internal/controllers"
@@ -33,6 +36,7 @@ func main() {
 	passRepo := postgres.NewPassRepo(postgresPool)
 	nicknameRepo := postgres.NewNicknameRepo(postgresPool)
 	telegramRepo := redis.NewTelegramRepo(redisClient)
+	tempTelegramRepo := redis.NewTempTelegramRepo(redisClient)
 
 	log, err := logger.NewZerolog()
 	if err != nil {
@@ -62,11 +66,6 @@ func main() {
 		Log(log).
 		Build()
 
-	telegramApi := builders.NewTelegramApiBuilder().
-		TelegramRepo(telegramRepo).
-		Log(log).
-		Build()
-
 	staticApi := services.NewStaticService(staticRepo)
 
 	emailApi := services.NewEmailService(
@@ -76,7 +75,16 @@ func main() {
 		typedenv.String("SMTP_PORT"),
 	)
 
-	bot := telegram.NewBot(accountApi, telegramApi, emailApi, log)
+	messageBroker := broker.New[*domain.Message]()
+
+	telegramApi := builders.NewTelegramApiBuilder().
+		TelegramRepo(telegramRepo).
+		TempTelegramRepo(tempTelegramRepo).
+		Broker(messageBroker).
+		Log(log).
+		Build()
+
+	bot := telegram.NewBot(accountApi, telegramApi, emailApi, messageBroker, log)
 
 	go func() {
 		err = bot.Run(ctx, typedenv.String("TELEGRAM_TOKEN"))
@@ -85,7 +93,7 @@ func main() {
 		}
 	}()
 
-	rest := controllers.NewRestController(typedenv.String("NUCLEAR_ADDR"), authApi, accountApi, emailApi, staticApi, passApi, nicknameApi, log)
+	rest := controllers.NewRestController(typedenv.String("NUCLEAR_ADDR"), authApi, accountApi, emailApi, staticApi, passApi, nicknameApi, telegramApi, log)
 	if err := rest.Run(); err != nil {
 		panic(err)
 	}

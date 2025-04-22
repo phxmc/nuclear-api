@@ -3,6 +3,8 @@ package domain
 const (
 	PermDefault = 1 << (iota + 1)
 	PermSuper
+	PermAddPass
+	PermRemovePass
 )
 
 const (

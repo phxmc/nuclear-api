@@ -2,9 +2,10 @@ package telegram
 
 import (
 	"context"
+	"time"
+
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/orewaee/nuclear-api/internal/app/domain"
-	"time"
 )
 
 func (bot *Bot) link(update tgbotapi.Update) {

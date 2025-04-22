@@ -27,3 +27,13 @@ func (chatState ChatState) Valid() bool {
 func (chatState ChatState) String() string {
 	return string(chatState)
 }
+
+type TempTelegram struct {
+	Code  string
+	Email string
+}
+
+type Message struct {
+	ChatId   int64
+	Markdown string
+}

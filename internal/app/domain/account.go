@@ -9,3 +9,7 @@ type Account struct {
 	Perms      int
 	CreatedAt  time.Time
 }
+
+type TempAccount struct {
+	Code string
+}

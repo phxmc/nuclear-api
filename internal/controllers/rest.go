@@ -18,6 +18,7 @@ type RestController struct {
 	staticApi   api.StaticApi
 	passApi     api.PassApi
 	nicknameApi api.NicknameApi
+	telegramApi api.TelegramApi
 	log         *zerolog.Logger
 }
 
@@ -29,6 +30,7 @@ func NewRestController(
 	staticApi api.StaticApi,
 	passApi api.PassApi,
 	nicknameApi api.NicknameApi,
+	telegramApi api.TelegramApi,
 	log *zerolog.Logger) *RestController {
 	return &RestController{
 		addr,
@@ -38,6 +40,7 @@ func NewRestController(
 		staticApi,
 		passApi,
 		nicknameApi,
+		telegramApi,
 		log,
 	}
 }

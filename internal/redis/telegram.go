@@ -37,3 +37,8 @@ func (repo *TelegramRepo) SetChatState(ctx context.Context, chatId int64, state 
 	key := fmt.Sprintf("chat_state:%d", chatId)
 	return repo.client.Set(ctx, key, state, ttl).Err()
 }
+
+func (repo *TelegramRepo) ResetChatState(ctx context.Context, chatId int64) error {
+	key := fmt.Sprintf("chat_state:%d", chatId)
+	return repo.client.Del(ctx, key).Err()
+}

@@ -126,12 +126,22 @@ func (repo *AccountRepo) AccountExistsByTelegramId(ctx context.Context, telegram
 }
 
 func (repo *AccountRepo) AddAccount(ctx context.Context, account *domain.Account) error {
-	err := withTx(ctx, repo.pool, func(tx pgx.Tx) error {
+	return withTx(ctx, repo.pool, func(tx pgx.Tx) error {
 		_, err := tx.Exec(ctx, "INSERT INTO accounts (id, email, telegram_id, perms, created_at) VALUES ($1, $2, $3, $4, $5)",
 			&account.Id, &account.Email, account.TelegramId, &account.Perms, &account.CreatedAt)
 
 		return err
 	})
+}
 
-	return err
+func (repo *AccountRepo) SetAccountTelegramId(ctx context.Context, accountId string, telegramId int64) error {
+	return withTx(ctx, repo.pool, func(tx pgx.Tx) error {
+		_, err := tx.Exec(ctx, "UPDATE accounts SET telegram_id = $1 WHERE id = $2", telegramId, accountId)
+
+		if err != nil && errors.Is(err, pgx.ErrNoRows) {
+			return domain.ErrNoAccount
+		}
+
+		return err
+	})
 }

@@ -8,6 +8,9 @@ var (
 	ErrTempAccountExist = errors.New("temp account already exists")
 	ErrNoTempAccount    = errors.New("temp account does not exist")
 
+	ErrTempTelegramExist = errors.New("temp telegram already exists")
+	ErrNoTempTelegram    = errors.New("temp telegram does not exist")
+
 	ErrAccountExist = errors.New("account already exists")
 	ErrNoAccount    = errors.New("account does not exist")
 

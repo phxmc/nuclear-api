@@ -1,14 +1,23 @@
 package dto
 
 import (
-	"github.com/orewaee/nuclear-api/internal/app/domain"
-	"github.com/orewaee/nuclear-api/internal/validator"
 	"regexp"
 	"time"
+
+	"github.com/orewaee/nuclear-api/internal/app/domain"
+	"github.com/orewaee/nuclear-api/internal/validator"
+)
+
+type LoginMethod string
+
+const (
+	LoginMethodEmail    LoginMethod = "email"
+	LoginMethodTelegram LoginMethod = "telegram"
 )
 
 type LoginRequest struct {
-	Email string `json:"email"`
+	Email  string      `json:"email"`
+	Method LoginMethod `json:"method"`
 }
 
 // Validate may return domain.ErrIncorrectEmail
